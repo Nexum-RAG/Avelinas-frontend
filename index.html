@@ -794,7 +794,41 @@
     const el = document.createElement('div');
     el.className = 'tb' + (bk.time === t ? ' sel' : '');
     el.textContent = t;
-    el.onclick = () => { bk.time = t; renderTimes(); };
+    el.onclick = async () => {
+  bk.time = t;
+  renderTimes();
+
+  // Convertir fecha a ISO para el POST
+  const meses = { enero:1,febrero:2,marzo:3,abril:4,mayo:5,junio:6,julio:7,agosto:8,septiembre:9,octubre:10,noviembre:11,diciembre:12 };
+  const parts = bk.date.split(' de ');
+  const day   = String(parts[0]).padStart(2,'0');
+  const mes   = String(meses[parts[1]]).padStart(2,'0');
+  const year  = new Date().getFullYear();
+  const fechaISO = `${year}-${mes}-${day}`;
+
+  try {
+    const resp = await fetch('https://porto-estudio-avelinas-api.67iz4w.easypanel.host/api/pendientes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fecha: fechaISO,
+        hora_inicio: t,
+        servicio_nombre: bk.srv,
+        nombre: 'Web'
+      })
+    });
+    const data = await resp.json();
+    if (!resp.ok) {
+      showToast('Ese horario ya no está disponible, elegí otro');
+      bk.time = null;
+      renderTimes();
+    } else {
+      bk.pendienteId = data.id; // guardamos el id por si hace falta después
+    }
+  } catch(e) {
+    console.error('Error creando pendiente:', e);
+  }
+};
     g.appendChild(el);
   });
 }
