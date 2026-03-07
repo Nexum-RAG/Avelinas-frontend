@@ -766,7 +766,6 @@
   const g = document.getElementById('timeGrid');
   g.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:16px;color:var(--ink-soft);font-size:.84rem">Consultando disponibilidad...</div>';
 
-  // Convertir "12 de marzo" → "2026-03-12"
   const meses = { enero:1,febrero:2,marzo:3,abril:4,mayo:5,junio:6,julio:7,agosto:8,septiembre:9,octubre:10,noviembre:11,diciembre:12 };
   const parts = bk.date.split(' de ');
   const day   = String(parts[0]).padStart(2,'0');
@@ -780,7 +779,6 @@
     const data = await resp.json();
     disponibles = data.disponibles || [];
   } catch(e) {
-    // fallback si la API no responde
     disponibles = ['09:00','09:30','10:00','10:30','11:00','11:30','14:00','14:30','15:00','15:30','16:00','17:00'];
   }
 
@@ -790,106 +788,40 @@
     return;
   }
 
-  el.onclick = async () => {
-  // Primero solo actualizamos visualmente
-  bk.time = t;
-  document.querySelectorAll('.tb').forEach(b => b.classList.remove('sel'));
-  el.classList.add('sel');
+  disponibles.forEach(t => {
+    const el = document.createElement('div');
+    el.className = 'tb' + (bk.time === t ? ' sel' : '');
+    el.textContent = t;
 
-  // Luego el POST
-  const meses = { enero:1,febrero:2,marzo:3,abril:4,mayo:5,junio:6,julio:7,agosto:8,septiembre:9,octubre:10,noviembre:11,diciembre:12 };
-  const parts = bk.date.split(' de ');
-  const day   = String(parts[0]).padStart(2,'0');
-  const mes   = String(meses[parts[1]]).padStart(2,'0');
-  const year  = new Date().getFullYear();
-  const fechaISO = `${year}-${mes}-${day}`;
+    el.onclick = async () => {
+      bk.time = t;
+      document.querySelectorAll('.tb').forEach(b => b.classList.remove('sel'));
+      el.classList.add('sel');
 
-  try {
-    const resp = await fetch('https://porto-estudio-avelinas-api.67iz4w.easypanel.host/api/pendientes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        fecha: fechaISO,
-        hora_inicio: t,
-        servicio_nombre: bk.srv,
-        nombre: 'Web'
-      })
-    });
-    const data = await resp.json();
-    if (!resp.ok) {
-      showToast('Ese horario ya no está disponible, elegí otro');
-      bk.time = null;
-      el.classList.remove('sel');
-    } else {
-      bk.pendienteId = data.id;
-    }
-  } catch(e) {
-    console.error('Error creando pendiente:', e);
-  }
-};
+      try {
+        const resp = await fetch('https://porto-estudio-avelinas-api.67iz4w.easypanel.host/api/pendientes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fecha: fechaISO,
+            hora_inicio: t,
+            servicio_nombre: bk.srv,
+            nombre: 'Web'
+          })
+        });
+        const data = await resp.json();
+        if (!resp.ok) {
+          showToast('Ese horario ya no está disponible, elegí otro');
+          bk.time = null;
+          el.classList.remove('sel');
+        } else {
+          bk.pendienteId = data.id;
+        }
+      } catch(e) {
+        console.error('Error creando pendiente:', e);
+      }
+    };
 
-  // Convertir fecha a ISO para el POST
-  const meses = { enero:1,febrero:2,marzo:3,abril:4,mayo:5,junio:6,julio:7,agosto:8,septiembre:9,octubre:10,noviembre:11,diciembre:12 };
-  const parts = bk.date.split(' de ');
-  const day   = String(parts[0]).padStart(2,'0');
-  const mes   = String(meses[parts[1]]).padStart(2,'0');
-  const year  = new Date().getFullYear();
-  const fechaISO = `${year}-${mes}-${day}`;
-
-  try {
-    const resp = await fetch('https://porto-estudio-avelinas-api.67iz4w.easypanel.host/api/pendientes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        fecha: fechaISO,
-        hora_inicio: t,
-        servicio_nombre: bk.srv,
-        nombre: 'Web'
-      })
-    });
-    const data = await resp.json();
-    if (!resp.ok) {
-      showToast('Ese horario ya no está disponible, elegí otro');
-      bk.time = null;
-      renderTimes();
-    } else {
-      bk.pendienteId = data.id; // guardamos el id por si hace falta después
-    }
-  } catch(e) {
-    console.error('Error creando pendiente:', e);
-  }
-};
     g.appendChild(el);
   });
 }
-
-  function renderConfirm() {
-    document.getElementById('cSrv').textContent  = bk.srv  || '—';
-    document.getElementById('cDate').textContent = bk.date || '—';
-    document.getElementById('cTime').textContent = bk.time ? bk.time+' hs' : '—';
-  }
-
-  function confirmB() {
-    const name=document.getElementById('bName').value.trim();
-    const tel=document.getElementById('bTel').value.trim();
-    const dni=document.getElementById('bDni').value.trim();
-    const nota=document.getElementById('bNota').value.trim();
-    if(!name){ showToast('Ingresá tu nombre'); return; }
-    if(!tel){ showToast('Ingresá tu teléfono / WhatsApp'); return; }
-    if(!dni){ showToast('Ingresá tu DNI'); return; }
-    let msg=`Hola! Quiero reservar un turno:\n• Nombre: ${name}\n• DNI: ${dni}\n• Teléfono: ${tel}\n• Servicio: ${bk.srv}\n• Fecha: ${bk.date}\n• Horario: ${bk.time} hs`;
-    if(nota) msg+=`\n• Aclaración: ${nota}`;
-    window.open(`https://wa.me/542494623097?text=${encodeURIComponent(msg)}`,'_blank');
-    showToast('Redirigiendo a WhatsApp...');
-  }
-
-  function sendForm(e) {
-    e.preventDefault();
-    showToast('Mensaje enviado. Te respondemos pronto!');
-    e.target.reset();
-  }
-
-  renderCal();
-</script>
-</body>
-</html>
