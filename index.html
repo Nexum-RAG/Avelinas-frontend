@@ -435,36 +435,19 @@
         <div class="bw-step" id="st3">Horario</div>
         <div class="bw-step" id="st4">Confirmar</div>
       </div>
-      <!-- Paso 1 -->
+      <!-- Paso 1a: Categoría -->
       <div class="bw-panel active" id="p1">
         <div class="bw-title">¿Qué servicio querés?</div>
-        <div class="ssb-grid">
-          <button class="ssb" onclick="selSrv(this,'Peluquería')">
-            <span class="ssn"><svg viewBox="0 0 24 24"><path d="M6 3a3 3 0 100 6 3 3 0 000-6z"/><path d="M6 9l6 13M20 4l-6 8"/><circle cx="18" cy="19" r="2"/></svg>Peluquería</span>
-            <span class="ssp">Desde $8.000</span>
-          </button>
-          <button class="ssb" onclick="selSrv(this,'Manicura')">
-            <span class="ssn"><svg viewBox="0 0 24 24"><rect x="6" y="14" width="12" height="7" rx="2"/><path d="M9 14V9a3 3 0 016 0v5"/></svg>Manicura</span>
-            <span class="ssp">Desde $4.500</span>
-          </button>
-          <button class="ssb" onclick="selSrv(this,'Facial')">
-            <span class="ssn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 14s1 2 3 2 3-2 3-2"/><line x1="9" y1="10" x2="9.01" y2="10"/><line x1="15" y1="10" x2="15.01" y2="10"/></svg>Facial</span>
-            <span class="ssp">Desde $7.000</span>
-          </button>
-          <button class="ssb" onclick="selSrv(this,'Masajes')">
-            <span class="ssn"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>Masajes</span>
-            <span class="ssp">Desde $6.000</span>
-          </button>
-          <button class="ssb" onclick="selSrv(this,'Depilación')">
-            <span class="ssn"><svg viewBox="0 0 24 24"><path d="M12 22V12M5 12H2a10 10 0 0020 0h-3M12 12V2"/></svg>Depilación</span>
-            <span class="ssp">Desde $3.500</span>
-          </button>
-          <button class="ssb" onclick="selSrv(this,'Pestañas y cejas')">
-            <span class="ssn"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="13" rx="9" ry="5"/><circle cx="12" cy="13" r="2"/></svg>Cejas/Pestañas</span>
-            <span class="ssp">Desde $2.800</span>
-          </button>
+        <div class="ssb-grid" id="catGrid">
+          <div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--ink-soft);font-size:.84rem">Cargando servicios…</div>
         </div>
         <div class="bw-nav"><span></span><button class="bw-next" onclick="goStep(2)">Siguiente →</button></div>
+      </div>
+      <!-- Paso 1b: Servicio específico -->
+      <div class="bw-panel" id="p1b">
+        <div class="bw-title" id="p1bTitle">Elegí el servicio</div>
+        <div class="ssb-grid ssb-grid--list" id="srvGrid"></div>
+        <div class="bw-nav"><button class="bw-back" onclick="goStep(1)">← Atrás</button><button class="bw-next" onclick="goStep(2)">Siguiente →</button></div>
       </div>
       <!-- Paso 2 -->
       <div class="bw-panel" id="p2">
@@ -690,34 +673,119 @@
     showToast('Producto agregado al carrito');
   }
 
-  let bk = { srv: null, date: null, time: null, pendienteId: null };
+  // ── SERVICIOS DESDE API ──
+  const API = 'https://porto-estudio-avelinas-api.67iz4w.easypanel.host';
+  // Fallback hardcodeado por si la API falla
+  const SRVS_FALLBACK = [
+    { id:1, nombre:'Corte',              categoria:'Peluquería', precio:1000,  duracion:60 },
+    { id:2, nombre:'Coloración',         categoria:'Peluquería', precio:14000, duracion:120 },
+    { id:3, nombre:'Manicura completa',  categoria:'Manicura',   precio:4500,  duracion:45 },
+    { id:4, nombre:'Semipermanente',     categoria:'Manicura',   precio:6800,  duracion:60 },
+    { id:5, nombre:'Facial hidratante',  categoria:'Faciales',   precio:7200,  duracion:60 },
+    { id:6, nombre:'Depilación piernas', categoria:'Depilación', precio:5500,  duracion:45 },
+    { id:7, nombre:'Masaje relajante',   categoria:'Masajes',    precio:6500,  duracion:60 },
+    { id:8, nombre:'Cejas y pestañas',   categoria:'Ojos',       precio:2800,  duracion:30 },
+  ];
+  // Íconos por categoría
+  const CAT_SVG = {
+    'Peluquería': '<svg viewBox="0 0 24 24"><path d="M6 3a3 3 0 100 6 3 3 0 000-6z"/><path d="M6 9l6 13M20 4l-6 8"/><circle cx="18" cy="19" r="2"/></svg>',
+    'Manicura':   '<svg viewBox="0 0 24 24"><rect x="6" y="14" width="12" height="7" rx="2"/><path d="M9 14V9a3 3 0 016 0v5"/></svg>',
+    'Faciales':   '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 14s1 2 3 2 3-2 3-2"/><line x1="9" y1="10" x2="9.01" y2="10"/><line x1="15" y1="10" x2="15.01" y2="10"/></svg>',
+    'Masajes':    '<svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>',
+    'Depilación': '<svg viewBox="0 0 24 24"><path d="M12 22V12M5 12H2a10 10 0 0020 0h-3M12 12V2"/></svg>',
+    'Ojos':       '<svg viewBox="0 0 24 24"><ellipse cx="12" cy="13" rx="9" ry="5"/><circle cx="12" cy="13" r="2"/></svg>',
+  };
+  const CAT_SVG_DEFAULT = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>';
+
+  let serviciosData = []; // datos cargados desde la API
+
+  async function cargarServicios() {
+    try {
+      const resp = await fetch(API + '/api/servicios');
+      if (!resp.ok) throw new Error('status ' + resp.status);
+      const data = await resp.json();
+      serviciosData = data.filter(s => s.activo);
+    } catch(e) {
+      console.warn('No se pudieron cargar servicios desde API, usando fallback:', e.name, e.message, e);
+      serviciosData = SRVS_FALLBACK;
+    }
+    renderCategorias();
+  }
+
+  function renderCategorias() {
+    const grid = document.getElementById('catGrid');
+    // Agrupar por categoría
+    const cats = [...new Set(serviciosData.map(s => s.categoria))];
+    grid.innerHTML = cats.map(cat => {
+      const srvs = serviciosData.filter(s => s.categoria === cat);
+      const minPrecio = Math.min(...srvs.map(s => s.precio));
+      const svg = CAT_SVG[cat] || CAT_SVG_DEFAULT;
+      return `<button class="ssb" onclick="selCategoria('${cat}')">
+        <span class="ssn">${svg}${cat}</span>
+        <span class="ssp">Desde $${minPrecio.toLocaleString('es-AR')}</span>
+      </button>`;
+    }).join('');
+  }
+
+  function selCategoria(cat) {
+    // Mostrar panel 1b con los servicios de esa categoría
+    const srvs = serviciosData.filter(s => s.categoria === cat);
+    document.getElementById('p1bTitle').textContent = cat;
+    const grid = document.getElementById('srvGrid');
+    grid.innerHTML = srvs.map(s => {
+      return `<button class="ssb" onclick="selServicio(this, ${s.id}, '${s.nombre.replace(/'/g,"\'")}', ${s.duracion})">
+        <span class="ssn">${CAT_SVG[cat] || CAT_SVG_DEFAULT}${s.nombre}</span>
+        <span class="srv-detail">
+          <span class="srv-price">$${s.precio.toLocaleString('es-AR')}</span>
+          <span class="srv-dur">${s.duracion} min</span>
+        </span>
+      </button>`;
+    }).join('');
+    // Mostrar panel 1b, ocultar 1
+    document.getElementById('p1').classList.remove('active');
+    document.getElementById('p1b').classList.add('active');
+  }
+
+  function selServicio(btn, id, nombre, duracion) {
+    document.querySelectorAll('#srvGrid .ssb').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+    bk.srv = nombre;
+    bk.servicioId = id;
+    bk.duracion = duracion;
+  }
+
+  function scrollToBooking(cat) {
+    document.getElementById('turnos').scrollIntoView({ behavior: 'smooth' });
+    // Si hay datos cargados, intentar preseleccionar la categoría
+    setTimeout(() => {
+      if (!serviciosData.length) return;
+      const match = [...new Set(serviciosData.map(s => s.categoria))]
+        .find(c => c.toLowerCase().includes(cat.toLowerCase().split(' ')[0]));
+      if (match) selCategoria(match);
+    }, 700);
+  }
+
+  let bk = { srv: null, servicioId: null, duracion: 60, date: null, time: null, pendienteId: null };
   let cy, cm;
   const now = new Date();
   cy = now.getFullYear(); cm = now.getMonth();
 
-  function selSrv(btn, name) {
-    document.querySelectorAll('.ssb').forEach(b => b.classList.remove('sel'));
-    btn.classList.add('sel'); bk.srv = name;
-  }
-
-  function scrollToBooking(srv) {
-    document.getElementById('turnos').scrollIntoView({ behavior: 'smooth' });
-    setTimeout(() => {
-      document.querySelectorAll('.ssb').forEach(b => {
-        const t = b.querySelector('.ssn').textContent.trim();
-        if (t.toLowerCase().includes(srv.split(' ')[0].toLowerCase())) selSrv(b, srv);
-      });
-    }, 700);
-  }
+  // Cargar servicios cuando el DOM esté listo
+  document.addEventListener('DOMContentLoaded', cargarServicios);
 
   function goStep(n) {
     if (n===2 && !bk.srv)  { showToast('Elegí un servicio primero'); return; }
     if (n===3 && !bk.date) { showToast('Elegí una fecha'); return; }
     if (n===4 && !bk.time) { showToast('Elegí un horario'); return; }
+    // Ocultar todos los paneles incluyendo 1b
+    ['p1','p1b','p2','p3','p4'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('active');
+    });
     for (let i=1; i<=4; i++) {
-      document.getElementById('p'+i).classList.toggle('active', i===n);
       document.getElementById('st'+i).classList.toggle('active', i===n);
     }
+    document.getElementById('p'+n).classList.add('active');
     if (n===2) renderCal();
     if (n===3) renderTimes();
     if (n===4) renderConfirm();
@@ -786,7 +854,7 @@
           const resp = await fetch('https://porto-estudio-avelinas-api.67iz4w.easypanel.host/api/pendientes', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ fecha: fechaISO, hora_inicio: t, servicio_nombre: bk.srv, nombre: 'Web' })
+            body: JSON.stringify({ fecha: fechaISO, hora_inicio: t, servicio_id: bk.servicioId, servicio_nombre: bk.srv, duracion_min: bk.duracion, nombre: 'Web' })
           });
           const data = await resp.json();
           if (resp.status === 409) {
@@ -862,7 +930,7 @@
 
     // Reset widget después de 2 segundos
     setTimeout(() => {
-      bk = { srv: null, date: null, time: null, pendienteId: null };
+      bk = { srv: null, servicioId: null, duracion: 60, date: null, time: null, pendienteId: null };
       document.querySelectorAll('.ssb').forEach(b => b.classList.remove('sel'));
       ['bName','bTel','bDni','bNota'].forEach(id => {
         const el = document.getElementById(id);
