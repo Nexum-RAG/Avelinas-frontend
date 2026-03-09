@@ -789,14 +789,22 @@
             body: JSON.stringify({ fecha: fechaISO, hora_inicio: t, servicio_nombre: bk.srv, nombre: 'Web' })
           });
           const data = await resp.json();
-          if (!resp.ok) {
+          if (resp.status === 409) {
+            // Slot genuinamente ocupado por otro usuario
             showToast('Ese horario ya no está disponible, elegí otro');
             bk.time = null;
             el.classList.remove('sel');
+          } else if (!resp.ok) {
+            // Error del servidor (500, etc.) — no bloqueamos el slot, seguimos igual
+            console.warn('Backend error al crear pendiente:', resp.status, data);
+            // bk.pendienteId queda null, confirmB lo maneja sin él
           } else {
             bk.pendienteId = data.id;
           }
-        } catch(e) { console.error('Error creando pendiente:', e); }
+        } catch(e) {
+          // Error de red / CORS — no bloqueamos el slot
+          console.warn('No se pudo conectar al backend para reservar pendiente:', e);
+        }
       };
       g.appendChild(el);
     });
