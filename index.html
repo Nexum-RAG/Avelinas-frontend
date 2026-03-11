@@ -376,7 +376,6 @@
       <div class="bw-panel active" id="p1">
         <div class="bw-title">¿Qué servicio querés?</div>
         <div class="ssb-grid" id="catGrid"><div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--ink-soft);font-size:.84rem">Cargando servicios…</div></div>
-        <div class="bw-nav"><span></span><button class="bw-next" onclick="goStep(2)">Siguiente →</button></div>
       </div>
       <!-- Paso 1b: Servicio específico -->
       <div class="bw-panel" id="p1b">
@@ -604,9 +603,10 @@
   }
 
   function selServicio(btn,id,nombre,duracion){
-    document.querySelectorAll('#srvGrid .ssb').forEach(b=>b.classList.remove('sel'));
-    btn.classList.add('sel');
+    document.querySelectorAll("#srvGrid .ssb").forEach(b=>b.classList.remove("sel"));
+    btn.classList.add("sel");
     bk.srv=nombre; bk.servicioId=id; bk.duracion=duracion;
+    setTimeout(()=>goStep(2), 280);
   }
 
   async function renderProfesionales(){
@@ -655,7 +655,7 @@
   document.addEventListener('DOMContentLoaded',()=>{cargarServicios();cargarProfesionales();});
 
   function goStep(n){
-    if(n===2&&!bk.srv){showToast('Elegí un servicio primero');return;}
+    if(n===2&&!bk.servicioId){showToast('Elegí un servicio específico primero');return;}
     if(n===3&&bk.profesionalId===undefined){showToast('Elegí una profesional o "sin preferencia"');return;}
     if(n===4&&!bk.date){showToast('Elegí una fecha');return;}
     if(n===5&&!bk.time){showToast('Elegí un horario');return;}
