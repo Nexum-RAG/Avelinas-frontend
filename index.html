@@ -628,7 +628,7 @@
         const color=p.color||PROF_COLORS[i%PROF_COLORS.length];
         const ini=(p.iniciales||(p.nombre.split(' ').map(w=>w[0]).join(''))).slice(0,2).toUpperCase();
         const sel=bk.profesionalId===p.id;
-        return `<button class="prof-btn${sel?' sel':''}" onclick="selProfesional(this,${p.id},'${p.nombre.replace(/'/g,"\\'")}','${color}')"><div class="prof-av" style="background:${color}">${ini}</div><div class="prof-info"><div class="prof-nm">${p.nombre}</div></div></button>`;
+        return `<button class="prof-btn${sel?' sel':''}" onclick="selProfesional(this,${p.id},'${p.nombre.replace(/'/g,"\\'")}','${color}')"><div class="prof-av" style="background:${color};overflow:hidden">${p.foto_url?'<img src="'+p.foto_url+'" style="width:100%;height:100%;object-fit:cover;">':ini}</div><div class="prof-info"><div class="prof-nm">${p.nombre}</div></div></button>`;
       }).join('');
   }
 
