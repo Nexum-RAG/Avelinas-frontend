@@ -763,16 +763,43 @@
 if(cumple)lines.push(`🎂 *Cumpleaños:* ${cumple}`);
     if(bk.pendienteId)lines.push(`🔖 *ID reserva:* ${bk.pendienteId}`);
     const waUrl='https://wa.me/542494623097?text='+encodeURIComponent(lines.join('\n'));
+   // Si hay pendiente_id, generar link de pago
     if(bk.pendienteId){
-      try{await fetch(API+'/api/pendientes/'+bk.pendienteId+'/confirmar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre:name,telefono:tel,dni:dni||null,notas:nota||null,profesional_id:bk.profesionalId||null,profesional_nombre:profTexto!=='Sin preferencia'?profTexto:null})});}
-      catch(e){console.warn('No se pudo confirmar:',e);}
+      try{
+        // Confirmar datos del pendiente primero
+        await fetch(API+'/api/pendientes/'+bk.pendienteId+'/confirmar',{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({nombre:name,telefono:tel,dni:dni||null,notas:nota||null,
+            profesional_id:bk.profesionalId||null,
+            profesional_nombre:profTexto!=='Sin preferencia'?profTexto:null})
+        });
+        // Generar link de pago
+        const pagoRes=await fetch(API+'/api/pagos/crear',{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({pendiente_id:bk.pendienteId})
+        });
+        const pagoData=await pagoRes.json();
+        if(pagoData.init_point){
+          showToast('Redirigiendo al pago...');
+          setTimeout(()=>window.open(pagoData.sandbox_init_point||pagoData.init_point,'_blank'),1000);
+        } else {
+          // Fallback a WhatsApp si falla el pago
+          showToast('Error al generar pago, redirigiendo a WhatsApp...');
+          setTimeout(()=>window.open('https://wa.me/542494623097?text='+encodeURIComponent(lines.join('\n')),'_blank'),1200);
+        }
+      }catch(e){
+        showToast('Error al generar pago, redirigiendo a WhatsApp...');
+        setTimeout(()=>window.open('https://wa.me/542494623097?text='+encodeURIComponent(lines.join('\n')),'_blank'),1200);
+      }
+    } else {
+      // Sin pendiente_id, ir directo a WhatsApp
+      showToast('¡Turno reservado! Redirigiendo a WhatsApp…');
+      setTimeout(()=>window.open('https://wa.me/542494623097?text='+encodeURIComponent(lines.join('\n')),'_blank'),1200);
     }
-    showToast('¡Turno reservado! Redirigiendo a WhatsApp…');
-    setTimeout(()=>window.open(waUrl,'_blank'),1200);
     setTimeout(()=>{
       bk={srv:null,servicioId:null,duracion:60,profesionalId:undefined,profesionalNombre:null,date:null,time:null,pendienteId:null};
       document.querySelectorAll('.ssb,.prof-btn,.prof-cualquiera').forEach(b=>b.classList.remove('sel'));
-      ['bName','bTel','bDni','bNota'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+      ['bName','bTel','bDni','bNota','bCumple'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
       goStep(1);
     },2000);
   }
