@@ -771,8 +771,9 @@ if(cumple)lines.push(`🎂 *Cumpleaños:* ${cumple}`);
         await fetch(API+'/api/pendientes/'+bk.pendienteId+'/confirmar',{
           method:'POST',headers:{'Content-Type':'application/json'},
           body:JSON.stringify({nombre:name,telefono:tel,dni:dni||null,notas:nota||null,
-            profesional_id:bk.profesionalId||null,
-            profesional_nombre:profTexto!=='Sin preferencia'?profTexto:null})
+  profesional_id:bk.profesionalId||null,
+  profesional_nombre:profTexto!=='Sin preferencia'?profTexto:null,
+  cumpleanos:document.getElementById('bCumple')?.value?.trim()||null})
         });
         // Generar link de pago
         const pagoRes=await fetch(API+'/api/pagos/crear',{
