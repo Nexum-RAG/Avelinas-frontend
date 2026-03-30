@@ -414,7 +414,8 @@
         <input class="bw-inp" type="text" placeholder="Tu nombre completo" id="bName"/>
         <input class="bw-inp" type="tel" placeholder="Tu teléfono / WhatsApp (ej: 2494 123456)" id="bTel"/>
         <input class="bw-inp" type="text" placeholder="DNI" id="bDni"/>
-        <textarea class="bw-inp bw-textarea" placeholder="Aclaraciones o consultas (opcional)" id="bNota" rows="3"></textarea>
+      <textarea class="bw-inp bw-textarea" placeholder="Aclaraciones o consultas (opcional)" id="bNota" rows="3"></textarea>
+<input class="bw-inp" type="text" placeholder="Fecha de cumpleaños (opcional)" id="bCumple"/>
         <div class="bw-nav"><button class="bw-back" onclick="goStep(4)">← Atrás</button><button class="bw-next" onclick="confirmB()">Confirmar turno ✓</button></div>
       </div>
     </div>
@@ -758,6 +759,8 @@
     const lines=['🌿 *Nueva reserva — Avelinas*','',`📋 *Servicio:* ${bk.srv}`,`👩 *Profesional:* ${profTexto}`,`📅 *Fecha:* ${bk.date}`,`🕐 *Horario:* ${bk.time}`,`👤 *Nombre:* ${name}`,`📱 *Teléfono:* ${tel}`];
     if(dni)lines.push(`🪪 *DNI:* ${dni}`);
     if(nota)lines.push(`📝 *Nota:* ${nota}`);
+    const cumple=document.getElementById('bCumple').value.trim();
+if(cumple)lines.push(`🎂 *Cumpleaños:* ${cumple}`);
     if(bk.pendienteId)lines.push(`🔖 *ID reserva:* ${bk.pendienteId}`);
     const waUrl='https://wa.me/542494623097?text='+encodeURIComponent(lines.join('\n'));
     if(bk.pendienteId){
