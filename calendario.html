@@ -12,6 +12,7 @@
       --white:#fdfaf5;--ink:#252820;--ink-mid:#484b3e;--ink-soft:#7a7d6d;
       --serif:'Cormorant Garamond',serif;--sans:'DM Sans',sans-serif;
       --s-confirmado:#6e7d5b;--s-completado:#3e4733;--s-cancelado-c:#c0956a;--s-cancelado-l:#a05040;--s-modificado:#7a8ab0;
+      --slot-h: 32px;
     }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
     html,body{height:100%;overflow:hidden;}
@@ -31,10 +32,10 @@
     .api-status.show{display:flex;}
 
     /* CONTENT */
-    .content{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:12px;}
+    .content{flex:1;overflow:hidden;padding:16px 24px;display:flex;flex-direction:column;gap:12px;}
 
     /* CALENDAR TOOLBAR */
-    .cal-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+    .cal-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;flex-shrink:0;}
     .cal-nav-group{display:flex;align-items:center;gap:10px;}
     .cal-nav-btn{background:var(--white);border:1.5px solid var(--cream-mid);border-radius:8px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink-mid);font-size:.9rem;transition:all .2s;}
     .cal-nav-btn:hover{border-color:var(--olive-mid);color:var(--olive);}
@@ -49,13 +50,13 @@
     .leg-dot{width:11px;height:11px;border-radius:3px;}
 
     /* WEEK VIEW */
-    .cal-wrap{background:var(--white);border-radius:18px;border:1px solid var(--cream-mid);overflow:hidden;flex:1;}
+    .cal-wrap{background:var(--white);border-radius:18px;border:1px solid var(--cream-mid);overflow:hidden;flex:1;min-height:0;}
     .week-header{display:grid;border-bottom:1px solid var(--cream-mid);}
     .week-day-head{padding:11px 8px;text-align:center;border-left:1px solid var(--cream-mid);font-size:.72rem;color:var(--ink-soft);letter-spacing:.04em;cursor:pointer;}
     .week-day-head .dn{font-family:var(--serif);font-size:1.2rem;font-weight:600;color:var(--ink);display:block;line-height:1.1;}
     .week-day-head.today .dn{color:var(--olive);}
     .week-day-head.today{background:rgba(90,99,72,.04);}
-    .week-body{display:flex;overflow-y:auto;max-height:calc(100vh - 195px);}
+    .week-body{display:flex;overflow-y:auto;height:calc(100% - 50px);}
     .week-times{width:52px;flex-shrink:0;}
     .tsl{height:64px;display:flex;align-items:flex-start;justify-content:flex-end;padding:4px 7px 0 0;font-size:.63rem;color:var(--ink-soft);}
     .week-grid{flex:1;display:grid;position:relative;}
@@ -68,42 +69,46 @@
     .appt:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,.13);z-index:10;}
     .appt-name{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px;}
     .appt-srv{opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.68rem;}
-    .appt-more{position:absolute;top:4px;right:4px;background:rgba(255,255,255,.28);border:none;border-radius:4px;width:18px;height:14px;cursor:pointer;display:none;align-items:center;justify-content:center;font-size:.65rem;color:inherit;line-height:1;letter-spacing:.05em;}
+    .appt-more{position:absolute;top:4px;right:4px;background:rgba(255,255,255,.28);border:none;border-radius:4px;width:18px;height:14px;cursor:pointer;display:none;align-items:center;justify-content:center;font-size:.65rem;color:inherit;line-height:1;}
     .appt:hover .appt-more{display:flex;}
     .st-confirmado{background:rgba(110,125,91,.35);border-left:3px solid var(--s-confirmado);color:#1e2d12;}
     .st-completado{background:rgba(62,71,51,.55);border-left:3px solid var(--s-completado);color:#ffffff;}
     .st-cancelado-c{background:rgba(192,149,106,.45);border-left:3px solid var(--s-cancelado-c);color:#4a2000;}
     .st-cancelado-l{background:rgba(160,80,64,.45);border-left:3px solid var(--s-cancelado-l);color:#3a0f00;}
     .st-modificado{background:rgba(122,138,176,.45);border-left:3px solid var(--s-modificado);color:#0f1840;}
-    .st-bloqueo{background:repeating-linear-gradient(45deg,rgba(120,115,100,.07),rgba(120,115,100,.07) 4px,transparent 4px,transparent 10px);border-left:3px solid #b0aa98;color:#6a6558;font-style:italic;}
-    .block-btn{background:none;border:1.5px solid var(--cream-mid);border-radius:6px;font-size:.68rem;font-family:var(--sans);padding:3px 9px;cursor:pointer;color:var(--ink-soft);white-space:nowrap;transition:all .18s;}
+    .st-bloqueo{background:repeating-linear-gradient(45deg,rgba(120,115,100,.09),rgba(120,115,100,.09) 4px,transparent 4px,transparent 10px);border-left:3px solid #b0aa98;color:#6a6558;font-style:italic;}
+    .block-btn{background:none;border:1.5px solid var(--cream-mid);border-radius:6px;font-size:.62rem;font-family:var(--sans);padding:2px 7px;cursor:pointer;color:var(--ink-soft);white-space:nowrap;transition:all .18s;}
     .block-btn:hover{border-color:var(--olive-mid);color:var(--olive);}
 
-    /* DAY VIEW */
-    .day-wrap{display:flex;flex-direction:column;height:calc(100vh - 190px);overflow:hidden;}
+    /* DAY VIEW — grilla de 30min */
+    .day-wrap{display:flex;flex-direction:column;height:100%;overflow:hidden;}
     .day-header-row{display:flex;flex-shrink:0;border-bottom:1px solid var(--cream-mid);background:var(--white);position:sticky;top:0;z-index:10;}
-    .day-time-col{width:56px;flex-shrink:0;}
+    .day-time-col{width:52px;flex-shrink:0;}
     .day-profs-scroll{flex:1;overflow-x:auto;overflow-y:hidden;}
     .day-profs-inner{display:flex;min-width:max-content;}
     .day-prof-head{width:160px;flex-shrink:0;padding:8px 6px;text-align:center;border-left:1px solid var(--cream-mid);}
-    .day-prof-av{width:32px;height:32px;border-radius:50%;margin:0 auto 3px;display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:500;color:var(--white);}
+    .day-prof-av{width:32px;height:32px;border-radius:50%;margin:0 auto 3px;display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:500;color:var(--white);overflow:hidden;}
     .day-prof-name{font-size:.74rem;color:var(--ink-mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
     .day-block-all{background:none;border:1px solid var(--cream-mid);border-radius:5px;font-size:.6rem;font-family:var(--sans);padding:2px 6px;cursor:pointer;color:var(--ink-soft);margin-top:3px;transition:all .15s;white-space:nowrap;}
     .day-block-all:hover{border-color:#c0956a;color:#8b4513;}
     .day-block-all.blocked{border-color:var(--olive-mid);color:var(--olive);background:rgba(90,99,72,.06);}
     .day-body-row{display:flex;flex:1;overflow:hidden;}
-    .day-time-labels{width:56px;flex-shrink:0;overflow:hidden;}
+    .day-time-labels{width:52px;flex-shrink:0;overflow:hidden;}
     .day-grid-scroll{flex:1;overflow:auto;}
     .day-grid-inner{display:flex;min-width:max-content;position:relative;}
     .day-prof-col{width:160px;flex-shrink:0;border-left:1px solid var(--cream-mid);position:relative;}
-    .day-hr-cell{height:64px;border-bottom:1px solid rgba(228,217,196,.6);cursor:pointer;transition:background .1s;position:relative;box-sizing:border-box;}
-    .day-hr-cell:nth-child(2n){background:rgba(246,241,233,.18);}
-    .day-hr-cell:hover{background:rgba(90,99,72,.05);}
-    .day-hr-cell.is-blocked{background:repeating-linear-gradient(45deg,rgba(120,115,100,.06),rgba(120,115,100,.06) 3px,transparent 3px,transparent 8px);cursor:default;}
-    .day-hint{padding:5px 14px;background:var(--cream);border-bottom:1px solid var(--cream-mid);font-size:.7rem;color:var(--ink-soft);display:flex;align-items:center;gap:6px;flex-shrink:0;}
-    .day-time-lbl-wrap{height:64px;display:flex;flex-direction:column;align-items:flex-end;padding-right:7px;box-sizing:border-box;}
-    .day-time-lbl-hour{height:16px;font-size:.63rem;color:var(--ink-mid);font-weight:500;line-height:16px;}
-    .day-time-lbl-q{height:16px;font-size:.55rem;color:rgba(122,125,109,.45);line-height:16px;}
+
+    /* Celdas de 30 min */
+    .day-slot{height:var(--slot-h);border-bottom:1px solid rgba(228,217,196,.4);cursor:pointer;transition:background .1s;position:relative;box-sizing:border-box;}
+    .day-slot.half{border-bottom-style:dashed;border-bottom-color:rgba(228,217,196,.3);}
+    .day-slot:hover{background:rgba(90,99,72,.05);}
+    .day-slot.is-blocked{background:repeating-linear-gradient(45deg,rgba(120,115,100,.06),rgba(120,115,100,.06) 3px,transparent 3px,transparent 8px);cursor:default;}
+    .day-slot.is-blocked:hover{background:repeating-linear-gradient(45deg,rgba(120,115,100,.06),rgba(120,115,100,.06) 3px,transparent 3px,transparent 8px);}
+
+    /* Labels de tiempo — 30min */
+    .day-time-lbl-wrap{height:var(--slot-h);display:flex;align-items:flex-start;justify-content:flex-end;padding:3px 7px 0 0;box-sizing:border-box;}
+    .day-time-lbl-hour{font-size:.63rem;color:var(--ink-mid);font-weight:500;line-height:1;}
+    .day-time-lbl-half{font-size:.55rem;color:rgba(122,125,109,.4);line-height:1;}
 
     /* ZOOM */
     .day-zoom-bar{display:flex;align-items:center;gap:10px;padding:6px 14px;background:var(--cream);border-bottom:1px solid var(--cream-mid);flex-shrink:0;}
@@ -113,6 +118,7 @@
     .day-zoom-fit{background:none;border:1.5px solid var(--cream-mid);border-radius:7px;padding:4px 10px;font-size:.7rem;font-family:var(--sans);cursor:pointer;color:var(--ink-soft);transition:all .15s;}
     .day-zoom-fit:hover{border-color:var(--olive-mid);color:var(--olive);}
     .day-zoom-fit.active{border-color:var(--olive);color:var(--olive);background:rgba(90,99,72,.06);}
+    .day-hint{padding:5px 14px;background:var(--cream);border-bottom:1px solid var(--cream-mid);font-size:.7rem;color:var(--ink-soft);display:flex;align-items:center;gap:6px;flex-shrink:0;}
 
     /* CONTEXT MENU */
     .ctx{position:fixed;background:var(--white);border:1px solid var(--cream-mid);border-radius:13px;box-shadow:0 8px 32px rgba(0,0,0,.13);z-index:9999;min-width:192px;overflow:hidden;animation:pop .15s ease;}
@@ -145,7 +151,6 @@
     /* TOAST */
     .toast{position:fixed;bottom:24px;right:24px;background:var(--olive);color:var(--white);padding:12px 18px;border-radius:12px;font-size:.82rem;z-index:9999;opacity:0;transform:translateY(8px);transition:all .28s;pointer-events:none;}
     .toast.show{opacity:1;transform:none;}
-
     ::-webkit-scrollbar{width:5px;height:5px;}
     ::-webkit-scrollbar-track{background:transparent;}
     ::-webkit-scrollbar-thumb{background:var(--cream-mid);border-radius:10px;}
@@ -153,7 +158,6 @@
 </head>
 <body>
 
-<!-- TOPBAR -->
 <div class="topbar">
   <div class="topbar-logo">
     <svg viewBox="0 0 38 44" fill="none">
@@ -173,15 +177,11 @@
     </div>
   </div>
   <div class="topbar-right">
-    <div class="api-status" id="apiStatus">
-      <div class="api-dot"></div>
-      Conectado
-    </div>
+    <div class="api-status" id="apiStatus"><div class="api-dot"></div>Conectado</div>
     <button class="tb-btn" onclick="showModal('newAppt')">+ Nuevo turno</button>
   </div>
 </div>
 
-<!-- CONTENT -->
 <div class="content">
   <div class="cal-toolbar">
     <div class="cal-nav-group">
@@ -224,7 +224,7 @@
     </div>
     <div class="day-hint">
       <svg viewBox="0 0 16 16" width="11" height="11"><rect x="2" y="2" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="5" y1="8" x2="11" y2="8" stroke="currentColor" stroke-width="1.5"/></svg>
-      Doble click en un horario vacío para bloquearlo · Click simple para nuevo turno
+      Click para nuevo turno · Doble click para bloquear 30 min
     </div>
     <div class="day-wrap">
       <div class="day-header-row">
@@ -272,16 +272,19 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ── DATOS ────────────────────────────────────────────────────
-let PROFS = [];
-let SRVS = [];
-let appts = [];
-let blocks = [];
-
-const HOURS = [9,10,11,12,13,14,15,16,17,18,19];
+// ── CONSTANTES ───────────────────────────────────────────────
+// Slots de 30 min: 9:00, 9:30, 10:00 ... 19:00
+const SLOTS = [];
+for (let h = 9; h <= 19; h++) {
+  SLOTS.push({ h, m: 0 });
+  if (h < 19) SLOTS.push({ h, m: 30 });
+}
+const SLOT_H = 32; // px por slot de 30 min
+const HOURS = [9,10,11,12,13,14,15,16,17,18,19]; // solo para semana y bloqueo día
 const DS = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 const MONTHS = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 
+let PROFS = [], SRVS = [], appts = [], blocks = [];
 let weekOffset = 0, curView = 'week', activeId = null, curModal = null, editIdx = null, curDayDate = null;
 
 // ── API ──────────────────────────────────────────────────────
@@ -296,8 +299,7 @@ async function api(method, path, body) {
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       const e = new Error(err.error || `HTTP ${res.status}`);
-      e.status = res.status;
-      throw e;
+      e.status = res.status; throw e;
     }
     return res.status === 204 ? null : res.json();
   } catch (err) {
@@ -336,7 +338,7 @@ async function loadServicios() {
   const data = await api('GET', '/api/servicios');
   if (!data?.length) return;
   SRVS.length = 0;
-  data.forEach(s => SRVS.push({ id: s.id, name: s.nombre, cat: s.categoria, price: s.precio, dur: typeof s.duracion === 'number' ? s.duracion + ' min' : s.duracion, on: s.activo }));
+  data.forEach(s => SRVS.push({ id: s.id, name: s.nombre, cat: s.categoria, price: s.precio, dur: typeof s.duracion === 'number' ? s.duracion : parseInt(s.duracion) || 60, on: s.activo }));
 }
 
 async function loadTurnos(fechaISO) {
@@ -371,38 +373,35 @@ async function loadBloqueos(fechaISO) {
   blocks = blocks.filter(b => b.day !== dow);
   data.forEach(b => {
     const profIdx = PROFS.findIndex(p => p.name === b.profesional_nombre);
-    blocks.push({
-      id: b.id,
-      prof: profIdx >= 0 ? profIdx : 0,
-      day: dow,
-      hour: parseInt(b.hora_inicio.slice(0, 2)),
-      duracion_min: b.duracion_min || 60,
-    });
+    const [hh, mm] = b.hora_inicio.slice(0, 5).split(':').map(Number);
+    blocks.push({ id: b.id, prof: profIdx >= 0 ? profIdx : 0, day: dow, hour: hh, min: mm || 0, duracion_min: b.duracion_min || 30 });
   });
 }
 
-// ── CALENDARIO ───────────────────────────────────────────────
+// ── HELPERS ──────────────────────────────────────────────────
 function getWeekDates(off) {
   const now = new Date(), dow = now.getDay();
   const mon = new Date(now);
   mon.setDate(now.getDate() - (dow === 0 ? 6 : dow - 1) + off * 7);
   return Array.from({length:7}, (_,i) => { const d = new Date(mon); d.setDate(mon.getDate()+i); return d; });
 }
-
 function fmtPeriod(days) {
   const a = days[0], b = days[6];
   return a.getMonth() === b.getMonth()
     ? `${a.getDate()} – ${b.getDate()} de ${MONTHS[a.getMonth()]} ${a.getFullYear()}`
     : `${a.getDate()} ${MONTHS[a.getMonth()]} – ${b.getDate()} ${MONTHS[b.getMonth()]} ${b.getFullYear()}`;
 }
-
 function fmtFecha(d) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
+// Convierte hora+min a índice de slot
+function slotIndex(h, m) { return (h - 9) * 2 + (m >= 30 ? 1 : 0); }
+// Convierte índice de slot a px desde arriba
+function slotTop(h, m) { return slotIndex(h, m) * SLOT_H; }
 
+// ── NAVEGACIÓN ───────────────────────────────────────────────
 function changeWeek(d) { weekOffset += d; renderCal(); }
 function goToday() { weekOffset = 0; renderCal(); }
-
 function setView(v) {
   curView = v;
   document.getElementById('weekView').style.display = v === 'week' ? '' : 'none';
@@ -411,7 +410,6 @@ function setView(v) {
   document.getElementById('btnDay').classList.toggle('active', v === 'day');
   renderCal();
 }
-
 function renderCal() {
   const days = getWeekDates(weekOffset);
   document.getElementById('calPeriod').textContent = fmtPeriod(days);
@@ -425,7 +423,7 @@ function renderCal() {
   }
 }
 
-// WEEK VIEW
+// ── WEEK VIEW ────────────────────────────────────────────────
 function renderWeek(days) {
   const today = new Date();
   const work = days.slice(0, 7);
@@ -433,7 +431,7 @@ function renderWeek(days) {
   hdr.style.gridTemplateColumns = '52px ' + work.map(() => '1fr').join(' ');
   hdr.innerHTML = '<div style="width:52px"></div>' + work.map((d, i) => {
     const t = d.toDateString() === today.toDateString();
-    return `<div class="week-day-head${t?' today':''}" onclick="switchToDay(${i})" title="Ver día"><span class="dn">${d.getDate()}</span>${DS[d.getDay()]}</div>`;
+    return `<div class="week-day-head${t?' today':''}" onclick="switchToDay(${i})"><span class="dn">${d.getDate()}</span>${DS[d.getDay()]}</div>`;
   }).join('');
   document.getElementById('weekTimes').innerHTML = HOURS.map(h => `<div class="tsl">${h}:00</div>`).join('');
   const grid = document.getElementById('weekGrid');
@@ -447,23 +445,20 @@ function renderWeek(days) {
     grid.appendChild(col);
   });
 }
-
 function switchToDay(colIdx) {
   curDayDate = getWeekDates(weekOffset).slice(0,7)[colIdx];
   setView('day');
 }
 
-// DAY VIEW
+// ── DAY VIEW — ZOOM ──────────────────────────────────────────
 let dayColWidth = 0;
 const DAY_COL_MIN = 70, DAY_COL_MAX = 220, DAY_COL_STEP = 20, DAY_COL_DEFAULT = 160;
-
 function getDayColWidth() {
   if (dayColWidth > 0) return dayColWidth;
   const scrollEl = document.getElementById('dayGridScroll');
   if (!scrollEl) return DAY_COL_DEFAULT;
   return Math.max(Math.floor((scrollEl.clientWidth || 800) / Math.max(PROFS.length, 1)), DAY_COL_MIN);
 }
-
 function applyDayColWidth() {
   const w = getDayColWidth();
   document.querySelectorAll('.day-prof-col').forEach(el => el.style.width = w+'px');
@@ -473,7 +468,6 @@ function applyDayColWidth() {
   document.getElementById('btnZoomFit')?.classList.toggle('active', dayColWidth === 0);
   document.getElementById('btnZoomFull')?.classList.toggle('active', dayColWidth === DAY_COL_DEFAULT);
 }
-
 function setDayZoom(dir) {
   const current = dayColWidth > 0 ? dayColWidth : getDayColWidth();
   dayColWidth = Math.min(DAY_COL_MAX, Math.max(DAY_COL_MIN, current + dir * DAY_COL_STEP));
@@ -482,15 +476,17 @@ function setDayZoom(dir) {
 function setDayZoomFit() { dayColWidth = 0; applyDayColWidth(); }
 function setDayZoomFull() { dayColWidth = DAY_COL_DEFAULT; applyDayColWidth(); }
 
+// ── DAY VIEW — RENDER ────────────────────────────────────────
 function renderDay(date) {
   if (!date) return;
   const dow = date.getDay() === 0 ? 7 : date.getDay();
   const colW = getDayColWidth();
 
+  // Cabecera profesionales
   document.getElementById('dayProfsInner').innerHTML = PROFS.map((p, pi) => {
-    const allBlocked = HOURS.every(h => blocks.some(b => b.prof===pi && b.day===dow && b.hour===h));
+    const allBlocked = HOURS.every(h => isSlotBlocked(pi, dow, h, 0) && isSlotBlocked(pi, dow, h, 30));
     return `<div class="day-prof-head" style="width:${colW}px">
-      <div class="day-prof-av" style="background:${p.color}">${p.foto_url ? `<img src="${p.foto_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" onerror="this.style.display='none'">` : p.ini}</div>
+      <div class="day-prof-av" style="background:${p.color}">${p.foto_url ? `<img src="${p.foto_url}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">` : p.ini}</div>
       <div class="day-prof-name" title="${p.name}">${p.name}</div>
       <button class="day-block-all${allBlocked?' blocked':''}" onclick="toggleBlockDay(${pi},${dow})">
         ${allBlocked?'🔓 Desbloquear':'🔒 Bloquear día'}
@@ -498,13 +494,11 @@ function renderDay(date) {
     </div>`;
   }).join('');
 
-  document.getElementById('dayTimeLabels').innerHTML = HOURS.map(h => `
-    <div class="day-time-lbl-wrap">
-      <div class="day-time-lbl-hour">${h}:00</div>
-      <div class="day-time-lbl-q">:15</div>
-      <div class="day-time-lbl-q">:30</div>
-      <div class="day-time-lbl-q">:45</div>
-    </div>`).join('');
+  // Labels de tiempo — un label por hora, con :30 debajo
+  document.getElementById('dayTimeLabels').innerHTML = SLOTS.map(s => {
+    if (s.m === 0) return `<div class="day-time-lbl-wrap"><span class="day-time-lbl-hour">${s.h}:00</span></div>`;
+    return `<div class="day-time-lbl-wrap"><span class="day-time-lbl-half">:30</span></div>`;
+  }).join('');
 
   const gridInner = document.getElementById('dayGridInner');
   gridInner.innerHTML = '';
@@ -514,32 +508,51 @@ function renderDay(date) {
     col.className = 'day-prof-col';
     col.style.width = getDayColWidth() + 'px';
 
-    HOURS.forEach(h => {
-      const isBlocked = blocks.some(b => b.prof===pi && b.day===dow && b.hour===h);
+    // Una celda por slot de 30 min
+    SLOTS.forEach(s => {
+      const blocked = isSlotBlocked(pi, dow, s.h, s.m);
       const cell = document.createElement('div');
-      cell.className = 'day-hr-cell' + (isBlocked ? ' is-blocked' : '');
-      let clickTimer = null;
-      cell.addEventListener('click', () => {
-        if (clickTimer) return;
-        clickTimer = setTimeout(() => { clickTimer = null; if (!isBlocked) openNewApptAt(pi, h, 0); }, 220);
-      });
-      cell.addEventListener('dblclick', e => {
-        e.stopPropagation();
-        if (clickTimer) { clearTimeout(clickTimer); clickTimer = null; }
-        toggleBlock(null, pi, dow, h);
-      });
-      cell.title = isBlocked ? 'Doble click para desbloquear' : 'Click: nuevo turno · Doble click: bloquear';
+      cell.className = 'day-slot' + (s.m === 0 ? '' : ' half') + (blocked ? ' is-blocked' : '');
+      if (!blocked) {
+        let clickTimer = null;
+        cell.addEventListener('click', () => {
+          if (clickTimer) return;
+          clickTimer = setTimeout(() => { clickTimer = null; openNewApptAt(pi, s.h, s.m); }, 220);
+        });
+        cell.addEventListener('dblclick', e => {
+          e.stopPropagation();
+          if (clickTimer) { clearTimeout(clickTimer); clickTimer = null; }
+          toggleBlock(null, pi, dow, s.h, s.m);
+        });
+        cell.title = 'Click: nuevo turno · Doble click: bloquear';
+      } else {
+        cell.addEventListener('dblclick', e => {
+          e.stopPropagation();
+          toggleBlock(null, pi, dow, s.h, s.m);
+        });
+        cell.title = 'Doble click para desbloquear';
+      }
       col.appendChild(cell);
     });
 
-    blocks.filter(b => b.prof===pi && b.day===dow).forEach(b => {
+    // Dibujar bloques de bloqueo
+    // Agrupar bloques consecutivos del mismo prof para mostrarlos como un bloque continuo
+    const profBlocks = blocks.filter(b => b.prof===pi && b.day===dow).sort((a,b) => a.hour*60+a.min - (b.hour*60+b.min));
+    // Renderizar cada bloqueo individual
+    profBlocks.forEach(b => {
       const bl = document.createElement('div');
       bl.className = 'appt st-bloqueo';
-      bl.style.cssText=`top:${(b.hour-HOURS[0])*64}px;height:${(b.duracion_min||60)/60*64}px;display:flex;align-items:center;justify-content:space-between;padding:0 10px;z-index:3;`;
-      bl.innerHTML = `<span style="font-size:.7rem;font-style:italic;">Bloqueado ${b.hour}:00</span><button class="block-btn" onclick="toggleBlock(event,${pi},${dow},${b.hour})">Desbloquear</button>`;
+      const topPx = slotTop(b.hour, b.min);
+      const heightPx = (b.duracion_min / 30) * SLOT_H;
+      bl.style.cssText = `top:${topPx}px;height:${heightPx - 1}px;display:flex;align-items:center;justify-content:space-between;padding:0 8px;z-index:3;`;
+      const label = b.duracion_min <= 30
+        ? `${String(b.hour).padStart(2,'0')}:${String(b.min).padStart(2,'0')}`
+        : `${String(b.hour).padStart(2,'0')}:${String(b.min).padStart(2,'0')} — ${calcEndTime(b.hour, b.min, b.duracion_min)}`;
+      bl.innerHTML = `<span style="font-size:.65rem;font-style:italic;">🔒 ${label}</span><button class="block-btn" onclick="toggleBlock(event,${pi},${dow},${b.hour},${b.min})">✕</button>`;
       col.appendChild(bl);
     });
 
+    // Dibujar turnos
     appts.filter(a => a.prof===pi && a.day===dow).forEach(a => col.appendChild(makeBlock(a)));
     gridInner.appendChild(col);
   });
@@ -550,23 +563,43 @@ function renderDay(date) {
   setTimeout(applyDayColWidth, 10);
 }
 
+function calcEndTime(h, m, dur) {
+  const total = h * 60 + m + dur;
+  return `${String(Math.floor(total/60)).padStart(2,'0')}:${String(total%60).padStart(2,'0')}`;
+}
+
+// Verifica si un slot de 30 min está bloqueado
+function isSlotBlocked(pi, dow, h, m) {
+  return blocks.some(b => {
+    if (b.prof !== pi || b.day !== dow) return false;
+    const bStart = b.hour * 60 + b.min;
+    const bEnd = bStart + (b.duracion_min || 30);
+    const slotStart = h * 60 + m;
+    const slotEnd = slotStart + 30;
+    return slotStart < bEnd && slotEnd > bStart;
+  });
+}
+
+// ── BLOQUEOS ─────────────────────────────────────────────────
 function toggleBlockDay(pi, dow) {
-  const allBlocked = HOURS.every(h => blocks.some(b => b.prof===pi && b.day===dow && b.hour===h));
+  const allBlocked = HOURS.every(h => isSlotBlocked(pi, dow, h, 0) && isSlotBlocked(pi, dow, h, 30));
   const fecha = curDayDate ? fmtFecha(curDayDate) : null;
   if (allBlocked) {
-    HOURS.forEach(h => {
-      const idx = blocks.findIndex(b => b.prof===pi && b.day===dow && b.hour===h);
-      if (idx >= 0) { const blk = blocks[idx]; blocks.splice(idx, 1); if (API_ONLINE && blk.id) api('DELETE', `/api/bloqueos/${blk.id}`); }
-    });
+    const toDelete = blocks.filter(b => b.prof===pi && b.day===dow);
+    blocks = blocks.filter(b => !(b.prof===pi && b.day===dow));
+    toDelete.forEach(blk => { if (API_ONLINE && blk.id) api('DELETE', `/api/bloqueos/${blk.id}`); });
     showToast('Día desbloqueado para ' + PROFS[pi].name);
   } else {
+    // Borrar los que existen y crear uno por cada hora
+    const toDelete = blocks.filter(b => b.prof===pi && b.day===dow);
+    blocks = blocks.filter(b => !(b.prof===pi && b.day===dow));
+    toDelete.forEach(blk => { if (API_ONLINE && blk.id) api('DELETE', `/api/bloqueos/${blk.id}`); });
     HOURS.forEach(h => {
-      if (!blocks.some(b => b.prof===pi && b.day===dow && b.hour===h)) {
-        const nb = { prof: pi, day: dow, hour: h };
-        blocks.push(nb);
-        if (API_ONLINE && fecha && PROFS[pi].id) {
-          api('POST', '/api/bloqueos', { profesional_id: PROFS[pi].id, fecha, hora_inicio: String(h).padStart(2,'0')+':00', duracion_min: 60 }).then(r => { if (r?.id) nb.id = r.id; });
-        }
+      const nb = { prof: pi, day: dow, hour: h, min: 0, duracion_min: 60 };
+      blocks.push(nb);
+      if (API_ONLINE && fecha && PROFS[pi].id) {
+        api('POST', '/api/bloqueos', { profesional_id: PROFS[pi].id, fecha, hora_inicio: String(h).padStart(2,'0')+':00', duracion_min: 60 })
+          .then(r => { if (r?.id) nb.id = r.id; });
       }
     });
     showToast('Día bloqueado para ' + PROFS[pi].name);
@@ -575,55 +608,60 @@ function toggleBlockDay(pi, dow) {
 }
 
 let _blockDebounce = null;
-function toggleBlock(e, pi, dow, h) {
+function toggleBlock(e, pi, dow, h, m = 0) {
   if (e) e.stopPropagation();
-  const key = `${pi}-${dow}-${h}`;
+  const key = `${pi}-${dow}-${h}-${m}`;
   if (_blockDebounce === key) return;
   _blockDebounce = key;
   setTimeout(() => { _blockDebounce = null; }, 400);
 
-  const idx = blocks.findIndex(b => b.prof===pi && b.day===dow && b.hour===h);
-  if (idx >= 0) {
-    const blk = blocks[idx]; blocks.splice(idx, 1);
+  // Buscar bloqueo que cubra este slot
+  const existIdx = blocks.findIndex(b => {
+    if (b.prof !== pi || b.day !== dow) return false;
+    const bStart = b.hour * 60 + b.min;
+    const bEnd = bStart + (b.duracion_min || 30);
+    const slotStart = h * 60 + m;
+    return slotStart >= bStart && slotStart < bEnd;
+  });
+
+  if (existIdx >= 0) {
+    const blk = blocks[existIdx];
+    blocks.splice(existIdx, 1);
     renderDay(curDayDate);
     if (API_ONLINE && blk.id) api('DELETE', `/api/bloqueos/${blk.id}`);
     showToast('Horario desbloqueado');
   } else {
-    const nb = { prof: pi, day: dow, hour: h }; blocks.push(nb);
+    const fecha = curDayDate ? fmtFecha(curDayDate) : null;
+    const nb = { prof: pi, day: dow, hour: h, min: m, duracion_min: 30 };
+    blocks.push(nb);
     renderDay(curDayDate);
-    console.log('Intentando crear bloqueo:', PROFS[pi].id, fmtFecha(curDayDate));
-    if (API_ONLINE && curDayDate && PROFS[pi].id) {
-     api('POST', '/api/bloqueos', {
-  profesional_id: PROFS[pi].id,
-  fecha,
-  hora_inicio: String(h).padStart(2,'0') + ':00',
-  duracion_min: 30,
-}).then(r => { console.log('Bloqueo creado:', r); if (r?.id) nb.id = r.id; });
-    } else {
-      console.log('No se ejecutó POST — API_ONLINE:', API_ONLINE, 'curDayDate:', curDayDate, 'prof.id:', PROFS[pi]?.id);
+    if (API_ONLINE && fecha && PROFS[pi].id) {
+      const horaStr = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+      api('POST', '/api/bloqueos', { profesional_id: PROFS[pi].id, fecha, hora_inicio: horaStr, duracion_min: 30 })
+        .then(r => { if (r?.id) nb.id = r.id; });
     }
-    showToast('Horario bloqueado para ' + PROFS[pi].name);
+    showToast('Bloqueado ' + String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ' para ' + PROFS[pi].name);
   }
 }
 
+// ── TURNOS ───────────────────────────────────────────────────
 function makeBlock(a) {
-  const HH = 64;
-  const top = (a.hour - HOURS[0]) * HH + (a.min/60) * HH;
-  const h = Math.max((a.dur/60) * HH - 4, 24);
+  const top = slotTop(a.hour, a.min);
+  const h = Math.max((a.dur / 30) * SLOT_H - 2, SLOT_H - 2);
   const el = document.createElement('div');
   el.className = `appt st-${a.status}`;
   el.style.cssText = `top:${top}px;height:${h}px;`;
-  el.innerHTML = `<div class="appt-name">${a.name}</div><div class="appt-srv">${a.service} · ${a.hour}:${String(a.min).padStart(2,'0')} hs</div><button class="appt-more" onclick="openCtx(event,${a.id})">•••</button>`;
+  el.innerHTML = `<div class="appt-name">${a.name}</div><div class="appt-srv">${a.service} · ${String(a.hour).padStart(2,'0')}:${String(a.min).padStart(2,'0')}</div><button class="appt-more" onclick="openCtx(event,${a.id})">•••</button>`;
   el.addEventListener('click', e => { if (!e.target.classList.contains('appt-more')) openCtx(e, a.id); });
   return el;
 }
 
-// CONTEXT MENU
+// ── CONTEXT MENU ─────────────────────────────────────────────
 function openCtx(e, id) {
   e.stopPropagation(); activeId = id;
   const a = appts.find(x => x.id === id);
   document.getElementById('ctxName').textContent = a.name;
-  document.getElementById('ctxDetail').textContent = `${a.service} · ${a.hour}:${String(a.min).padStart(2,'0')} hs · ${PROFS[a.prof]?.name || '—'}`;
+  document.getElementById('ctxDetail').textContent = `${a.service} · ${String(a.hour).padStart(2,'0')}:${String(a.min).padStart(2,'0')} hs · ${PROFS[a.prof]?.name || '—'}`;
   const m = document.getElementById('ctxMenu'); m.style.display = 'block';
   const r = e.target.getBoundingClientRect();
   let x = r.right + 6, y = r.top;
@@ -631,7 +669,6 @@ function openCtx(e, id) {
   if (y + 220 > window.innerHeight) y = window.innerHeight - 230;
   m.style.left = x + 'px'; m.style.top = y + 'px';
 }
-
 function setStatus(s) {
   const a = appts.find(x => x.id === activeId);
   if (a) {
@@ -643,7 +680,6 @@ function setStatus(s) {
   }
   closeCtx(); showToast('Estado actualizado');
 }
-
 async function eliminarTurno() {
   if (!confirm('¿Eliminar este turno?')) return;
   const a = appts.find(x => x.id === activeId);
@@ -654,11 +690,10 @@ async function eliminarTurno() {
   }
   closeCtx();
 }
-
 function closeCtx() { document.getElementById('ctxMenu').style.display = 'none'; activeId = null; }
 document.addEventListener('click', e => { if (!e.target.closest('.ctx') && !e.target.closest('.appt-more')) closeCtx(); });
 
-// MODAL NUEVO TURNO
+// ── MODAL NUEVO TURNO ────────────────────────────────────────
 function openNewApptAt(profIdx, hour, min) {
   curModal = 'newAppt'; editIdx = null;
   document.getElementById('moTitle').textContent = 'Nuevo turno';
@@ -675,14 +710,10 @@ function openNewApptAt(profIdx, hour, min) {
   document.getElementById('mo').classList.add('open');
   setTimeout(() => document.getElementById('apptNombre')?.focus(), 100);
 }
-
 function showModal(type) {
   curModal = type;
-  if (type === 'newAppt') {
-    openNewApptAt(0, 9, 0);
-  }
+  if (type === 'newAppt') openNewApptAt(0, 9, 0);
 }
-
 async function saveMo() {
   if (curModal === 'newAppt') {
     const nombre = document.getElementById('apptNombre')?.value?.trim();
@@ -697,21 +728,14 @@ async function saveMo() {
     if (API_ONLINE && srv?.id && PROFS[profIdx]?.id) {
       try {
         const result = await api('POST', '/api/turnos', {
-          cliente_nombre: nombre,
-          servicio_id: srv.id,
-          servicio_nombre: srv.name,
-          profesional_id: PROFS[profIdx].id,
-          profesional_nombre: PROFS[profIdx].name,
-          fecha,
-          hora_inicio: hora + ':00',
-          duracion_min: parseInt(srv.dur) || 60,
-          estado: 'confirmado'
+          cliente_nombre: nombre, servicio_id: srv.id, servicio_nombre: srv.name,
+          profesional_id: PROFS[profIdx].id, profesional_nombre: PROFS[profIdx].name,
+          fecha, hora_inicio: hora + ':00', duracion_min: srv.dur || 60, estado: 'confirmado'
         });
         if (result) { showToast('Turno creado ✓'); renderCal(); }
         else showToast('Error al crear el turno');
       } catch (err) {
-        if (err.status === 409) showToast('⚠️ Ese horario ya está ocupado');
-        else showToast('Error al crear el turno');
+        showToast(err.status === 409 ? '⚠️ Ese horario ya está ocupado' : 'Error al crear el turno');
       }
     } else {
       const [hh, mm] = hora.split(':').map(Number);
@@ -721,27 +745,25 @@ async function saveMo() {
     }
   }
 }
-
 function filtrarProfsPorServicio() {
   const srvSelect = document.getElementById('apptServicio');
   const profSelect = document.getElementById('apptProf');
   if (!srvSelect || !profSelect) return;
-  const srvNombre = srvSelect.value;
   const prevVal = profSelect.value;
-  const profsFiltradas = PROFS.filter(p => !p.servicios?.length || p.servicios.includes(srvNombre));
+  const profsFiltradas = PROFS.filter(p => !p.servicios?.length || p.servicios.includes(srvSelect.value));
   profSelect.innerHTML = profsFiltradas.length
     ? profsFiltradas.map(p => `<option${p.name === prevVal ? ' selected' : ''}>${p.name}</option>`).join('')
     : '<option disabled>Ninguna profesional ofrece este servicio</option>';
 }
 
-// TOAST
+// ── TOAST ────────────────────────────────────────────────────
 function showToast(m) {
   const t = document.getElementById('toast');
   t.textContent = m; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2800);
 }
 
-// POLLING
+// ── POLLING ──────────────────────────────────────────────────
 setInterval(() => {
   if (!API_ONLINE) return;
   if (curView === 'week') { const days = getWeekDates(weekOffset); loadTurnosSemana(fmtFecha(days[1]), fmtFecha(days[6])); }
@@ -757,7 +779,6 @@ setInterval(() => {
     await loadTurnosSemana(fmtFecha(days[1]), fmtFecha(days[6]));
   } else {
     renderCal();
-    console.info('Backend no disponible — modo sin conexión');
   }
 })();
 </script>
