@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Avelinas — Calendario</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --olive:#5a6348;--olive-deep:#3e4733;--olive-mid:#6e7d5b;--olive-light:#8fa07a;
+      --olive-pale:#c8d3b0;--cream:#f6f1e9;--cream-dark:#ede5d4;--cream-mid:#e4d9c4;
+      --white:#fdfaf5;--ink:#252820;--ink-mid:#484b3e;--ink-soft:#7a7d6d;
+      --serif:'Cormorant Garamond',serif;--sans:'DM Sans',sans-serif;
+      --s-confirmado:#6e7d5b;--s-completado:#3e4733;--s-cancelado-c:#c0956a;--s-cancelado-l:#a05040;--s-modificado:#7a8ab0;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html,body{height:100%;overflow:hidden;}
+    body{font-family:var(--sans);font-weight:300;background:var(--cream);color:var(--ink);display:flex;flex-direction:column;}
+
+    /* TOPBAR */
+    .topbar{background:var(--olive-deep);padding:0 24px;height:54px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+    .topbar-logo{display:flex;align-items:center;gap:10px;}
+    .topbar-logo svg{width:22px;height:26px;flex-shrink:0;}
+    .topbar-logo-text{font-family:var(--serif);font-size:1.1rem;font-weight:400;color:var(--white);}
+    .topbar-logo-sub{font-size:.58rem;color:rgba(255,255,255,.4);letter-spacing:.1em;text-transform:uppercase;}
+    .topbar-right{display:flex;align-items:center;gap:10px;}
+    .tb-btn{background:rgba(255,255,255,.12);color:var(--white);border:1px solid rgba(255,255,255,.2);padding:7px 16px;border-radius:50px;font-family:var(--sans);font-size:.76rem;cursor:pointer;transition:background .2s;white-space:nowrap;}
+    .tb-btn:hover{background:rgba(255,255,255,.22);}
+    .api-dot{width:7px;height:7px;border-radius:50%;background:#6a9060;flex-shrink:0;}
+    .api-status{display:none;align-items:center;gap:6px;font-size:.7rem;color:rgba(255,255,255,.6);}
+    .api-status.show{display:flex;}
+
+    /* CONTENT */
+    .content{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:12px;}
+
+    /* CALENDAR TOOLBAR */
+    .cal-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+    .cal-nav-group{display:flex;align-items:center;gap:10px;}
+    .cal-nav-btn{background:var(--white);border:1.5px solid var(--cream-mid);border-radius:8px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink-mid);font-size:.9rem;transition:all .2s;}
+    .cal-nav-btn:hover{border-color:var(--olive-mid);color:var(--olive);}
+    .cal-period{font-family:var(--serif);font-size:1.4rem;font-weight:600;color:var(--ink);min-width:200px;}
+    .cal-today-btn{background:none;border:1.5px solid var(--cream-mid);padding:6px 14px;border-radius:8px;font-family:var(--sans);font-size:.76rem;cursor:pointer;color:var(--ink-mid);transition:all .2s;}
+    .cal-today-btn:hover{border-color:var(--olive-mid);color:var(--olive);}
+    .view-toggle{display:flex;background:var(--cream);border-radius:10px;padding:3px;gap:2px;}
+    .vt-btn{background:none;border:none;padding:6px 14px;border-radius:8px;font-family:var(--sans);font-size:.76rem;cursor:pointer;color:var(--ink-soft);transition:all .2s;}
+    .vt-btn.active{background:var(--white);color:var(--olive);font-weight:500;box-shadow:0 1px 4px rgba(0,0,0,.07);}
+    .legend{display:flex;gap:14px;flex-wrap:wrap;align-items:center;}
+    .leg-item{display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--ink-mid);}
+    .leg-dot{width:11px;height:11px;border-radius:3px;}
+
+    /* WEEK VIEW */
+    .cal-wrap{background:var(--white);border-radius:18px;border:1px solid var(--cream-mid);overflow:hidden;flex:1;}
+    .week-header{display:grid;border-bottom:1px solid var(--cream-mid);}
+    .week-day-head{padding:11px 8px;text-align:center;border-left:1px solid var(--cream-mid);font-size:.72rem;color:var(--ink-soft);letter-spacing:.04em;cursor:pointer;}
+    .week-day-head .dn{font-family:var(--serif);font-size:1.2rem;font-weight:600;color:var(--ink);display:block;line-height:1.1;}
+    .week-day-head.today .dn{color:var(--olive);}
+    .week-day-head.today{background:rgba(90,99,72,.04);}
+    .week-body{display:flex;overflow-y:auto;max-height:calc(100vh - 195px);}
+    .week-times{width:52px;flex-shrink:0;}
+    .tsl{height:64px;display:flex;align-items:flex-start;justify-content:flex-end;padding:4px 7px 0 0;font-size:.63rem;color:var(--ink-soft);}
+    .week-grid{flex:1;display:grid;position:relative;}
+    .week-col{border-left:1px solid var(--cream-mid);position:relative;}
+    .hr-line{height:64px;border-bottom:1px solid rgba(228,217,196,.5);}
+    .hr-line:nth-child(2n){background:rgba(246,241,233,.25);}
+
+    /* APPOINTMENT BLOCK */
+    .appt{position:absolute;left:3px;right:3px;border-radius:8px;padding:5px 8px;font-size:.72rem;cursor:pointer;overflow:hidden;transition:transform .15s,box-shadow .15s;z-index:2;}
+    .appt:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,.13);z-index:10;}
+    .appt-name{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px;}
+    .appt-srv{opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.68rem;}
+    .appt-more{position:absolute;top:4px;right:4px;background:rgba(255,255,255,.28);border:none;border-radius:4px;width:18px;height:14px;cursor:pointer;display:none;align-items:center;justify-content:center;font-size:.65rem;color:inherit;line-height:1;letter-spacing:.05em;}
+    .appt:hover .appt-more{display:flex;}
+    .st-confirmado{background:rgba(110,125,91,.35);border-left:3px solid var(--s-confirmado);color:#1e2d12;}
+    .st-completado{background:rgba(62,71,51,.55);border-left:3px solid var(--s-completado);color:#ffffff;}
+    .st-cancelado-c{background:rgba(192,149,106,.45);border-left:3px solid var(--s-cancelado-c);color:#4a2000;}
+    .st-cancelado-l{background:rgba(160,80,64,.45);border-left:3px solid var(--s-cancelado-l);color:#3a0f00;}
+    .st-modificado{background:rgba(122,138,176,.45);border-left:3px solid var(--s-modificado);color:#0f1840;}
+    .st-bloqueo{background:repeating-linear-gradient(45deg,rgba(120,115,100,.07),rgba(120,115,100,.07) 4px,transparent 4px,transparent 10px);border-left:3px solid #b0aa98;color:#6a6558;font-style:italic;}
+    .block-btn{background:none;border:1.5px solid var(--cream-mid);border-radius:6px;font-size:.68rem;font-family:var(--sans);padding:3px 9px;cursor:pointer;color:var(--ink-soft);white-space:nowrap;transition:all .18s;}
+    .block-btn:hover{border-color:var(--olive-mid);color:var(--olive);}
+
+    /* DAY VIEW */
+    .day-wrap{display:flex;flex-direction:column;height:calc(100vh - 190px);overflow:hidden;}
+    .day-header-row{display:flex;flex-shrink:0;border-bottom:1px solid var(--cream-mid);background:var(--white);position:sticky;top:0;z-index:10;}
+    .day-time-col{width:56px;flex-shrink:0;}
+    .day-profs-scroll{flex:1;overflow-x:auto;overflow-y:hidden;}
+    .day-profs-inner{display:flex;min-width:max-content;}
+    .day-prof-head{width:160px;flex-shrink:0;padding:8px 6px;text-align:center;border-left:1px solid var(--cream-mid);}
+    .day-prof-av{width:32px;height:32px;border-radius:50%;margin:0 auto 3px;display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:500;color:var(--white);}
+    .day-prof-name{font-size:.74rem;color:var(--ink-mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .day-block-all{background:none;border:1px solid var(--cream-mid);border-radius:5px;font-size:.6rem;font-family:var(--sans);padding:2px 6px;cursor:pointer;color:var(--ink-soft);margin-top:3px;transition:all .15s;white-space:nowrap;}
+    .day-block-all:hover{border-color:#c0956a;color:#8b4513;}
+    .day-block-all.blocked{border-color:var(--olive-mid);color:var(--olive);background:rgba(90,99,72,.06);}
+    .day-body-row{display:flex;flex:1;overflow:hidden;}
+    .day-time-labels{width:56px;flex-shrink:0;overflow:hidden;}
+    .day-grid-scroll{flex:1;overflow:auto;}
+    .day-grid-inner{display:flex;min-width:max-content;position:relative;}
+    .day-prof-col{width:160px;flex-shrink:0;border-left:1px solid var(--cream-mid);position:relative;}
+    .day-hr-cell{height:64px;border-bottom:1px solid rgba(228,217,196,.6);cursor:pointer;transition:background .1s;position:relative;box-sizing:border-box;}
+    .day-hr-cell:nth-child(2n){background:rgba(246,241,233,.18);}
+    .day-hr-cell:hover{background:rgba(90,99,72,.05);}
+    .day-hr-cell.is-blocked{background:repeating-linear-gradient(45deg,rgba(120,115,100,.06),rgba(120,115,100,.06) 3px,transparent 3px,transparent 8px);cursor:default;}
+    .day-hint{padding:5px 14px;background:var(--cream);border-bottom:1px solid var(--cream-mid);font-size:.7rem;color:var(--ink-soft);display:flex;align-items:center;gap:6px;flex-shrink:0;}
+    .day-time-lbl-wrap{height:64px;display:flex;flex-direction:column;align-items:flex-end;padding-right:7px;box-sizing:border-box;}
+    .day-time-lbl-hour{height:16px;font-size:.63rem;color:var(--ink-mid);font-weight:500;line-height:16px;}
+    .day-time-lbl-q{height:16px;font-size:.55rem;color:rgba(122,125,109,.45);line-height:16px;}
+
+    /* ZOOM */
+    .day-zoom-bar{display:flex;align-items:center;gap:10px;padding:6px 14px;background:var(--cream);border-bottom:1px solid var(--cream-mid);flex-shrink:0;}
+    .day-zoom-btn{background:var(--white);border:1.5px solid var(--cream-mid);border-radius:7px;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.9rem;color:var(--ink-mid);transition:all .15s;line-height:1;}
+    .day-zoom-btn:hover{border-color:var(--olive-mid);color:var(--olive);}
+    .day-zoom-label{font-size:.72rem;color:var(--ink-soft);min-width:36px;text-align:center;}
+    .day-zoom-fit{background:none;border:1.5px solid var(--cream-mid);border-radius:7px;padding:4px 10px;font-size:.7rem;font-family:var(--sans);cursor:pointer;color:var(--ink-soft);transition:all .15s;}
+    .day-zoom-fit:hover{border-color:var(--olive-mid);color:var(--olive);}
+    .day-zoom-fit.active{border-color:var(--olive);color:var(--olive);background:rgba(90,99,72,.06);}
+
+    /* CONTEXT MENU */
+    .ctx{position:fixed;background:var(--white);border:1px solid var(--cream-mid);border-radius:13px;box-shadow:0 8px 32px rgba(0,0,0,.13);z-index:9999;min-width:192px;overflow:hidden;animation:pop .15s ease;}
+    @keyframes pop{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+    .ctx-hdr{padding:10px 14px 8px;border-bottom:1px solid var(--cream-mid);}
+    .ctx-nm{font-size:.82rem;font-weight:500;color:var(--ink);}
+    .ctx-dt{font-size:.72rem;color:var(--ink-soft);margin-top:1px;}
+    .ctx-it{display:flex;align-items:center;gap:9px;padding:9px 14px;font-size:.8rem;cursor:pointer;color:var(--ink-mid);transition:background .12s;}
+    .ctx-it:hover{background:var(--cream);}
+    .ctx-it svg{width:14px;height:14px;flex-shrink:0;}
+    .ctx-it svg path,.ctx-it svg circle,.ctx-it svg polyline,.ctx-it svg line{stroke:currentColor;stroke-width:1.6;fill:none;}
+    .ctx-it.red{color:#a05040;}
+    .ctx-sep{height:1px;background:var(--cream-mid);margin:3px 0;}
+    .cdot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+
+    /* MODAL */
+    .mo{position:fixed;inset:0;background:rgba(37,40,32,.45);backdrop-filter:blur(4px);z-index:500;display:none;align-items:center;justify-content:center;}
+    .mo.open{display:flex;}
+    .mb{background:var(--white);border-radius:20px;padding:30px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.15);animation:pop .2s ease;max-height:90vh;display:flex;flex-direction:column;}
+    #moContent{overflow-y:auto;flex:1;min-height:0;}
+    .mt{font-family:var(--serif);font-size:1.3rem;font-weight:600;margin-bottom:18px;}
+    .mf{margin-bottom:13px;}
+    .ml{font-size:.74rem;color:var(--ink-soft);margin-bottom:5px;display:block;}
+    .mi,.ms{width:100%;background:var(--cream);border:1.5px solid transparent;border-radius:10px;padding:10px 14px;font-family:var(--sans);font-size:.86rem;color:var(--ink);outline:none;transition:border-color .2s;}
+    .mi:focus,.ms:focus{border-color:var(--olive-mid);}
+    .ma{display:flex;gap:10px;justify-content:flex-end;margin-top:22px;}
+    .mc{background:none;border:1.5px solid var(--cream-mid);color:var(--ink-mid);padding:9px 20px;border-radius:50px;font-family:var(--sans);font-size:.82rem;cursor:pointer;}
+    .msv{background:var(--olive);color:var(--white);border:none;padding:9px 22px;border-radius:50px;font-family:var(--sans);font-size:.82rem;cursor:pointer;}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:24px;right:24px;background:var(--olive);color:var(--white);padding:12px 18px;border-radius:12px;font-size:.82rem;z-index:9999;opacity:0;transform:translateY(8px);transition:all .28s;pointer-events:none;}
+    .toast.show{opacity:1;transform:none;}
+
+    ::-webkit-scrollbar{width:5px;height:5px;}
+    ::-webkit-scrollbar-track{background:transparent;}
+    ::-webkit-scrollbar-thumb{background:var(--cream-mid);border-radius:10px;}
+  </style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-logo">
+    <svg viewBox="0 0 38 44" fill="none">
+      <line x1="19" y1="43" x2="19" y2="21" stroke="#c8d3b0" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M19 32 Q15 30 10 27" stroke="#c8d3b0" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+      <path d="M19 32 Q23 30 28 27" stroke="#c8d3b0" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+      <path d="M10 27 C4 22 5 13 10 11 C13 15 14 22 10 27 Z" stroke="#c8d3b0" stroke-width="1.5" fill="none"/>
+      <circle cx="10" cy="19" r="1.1" fill="#c8d3b0"/>
+      <path d="M28 27 C34 22 33 13 28 11 C25 15 24 22 28 27 Z" stroke="#c8d3b0" stroke-width="1.5" fill="none"/>
+      <circle cx="28" cy="19" r="1.1" fill="#c8d3b0"/>
+      <path d="M19 21 C15 16 15 7 19 3 C23 7 23 16 19 21 Z" stroke="#c8d3b0" stroke-width="1.5" fill="none"/>
+      <circle cx="19" cy="11" r="1.1" fill="#c8d3b0"/>
+    </svg>
+    <div>
+      <div class="topbar-logo-text">Avelinas</div>
+      <div class="topbar-logo-sub">Calendario</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="api-status" id="apiStatus">
+      <div class="api-dot"></div>
+      Conectado
+    </div>
+    <button class="tb-btn" onclick="showModal('newAppt')">+ Nuevo turno</button>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+  <div class="cal-toolbar">
+    <div class="cal-nav-group">
+      <button class="cal-nav-btn" onclick="changeWeek(-1)">‹</button>
+      <div class="cal-period" id="calPeriod"></div>
+      <button class="cal-nav-btn" onclick="changeWeek(1)">›</button>
+      <button class="cal-today-btn" onclick="goToday()">Hoy</button>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <div class="legend">
+        <div class="leg-item"><div class="leg-dot" style="background:var(--s-confirmado)"></div>Confirmado</div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--s-completado)"></div>Completado</div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--s-cancelado-c)"></div>Cancelado</div>
+      </div>
+      <div class="view-toggle">
+        <button class="vt-btn active" id="btnWeek" onclick="setView('week')">Semana</button>
+        <button class="vt-btn" id="btnDay" onclick="setView('day')">Día</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEEK VIEW -->
+  <div class="cal-wrap" id="weekView">
+    <div class="week-header" id="weekHeader"></div>
+    <div class="week-body">
+      <div class="week-times" id="weekTimes"></div>
+      <div class="week-grid" id="weekGrid"></div>
+    </div>
+  </div>
+
+  <!-- DAY VIEW -->
+  <div class="cal-wrap" id="dayView" style="display:none;overflow:hidden;">
+    <div class="day-zoom-bar">
+      <span style="font-size:.72rem;color:var(--ink-soft);">Zoom:</span>
+      <button class="day-zoom-btn" onclick="setDayZoom(-1)">&#8722;</button>
+      <span class="day-zoom-label" id="dayZoomLabel">Auto</span>
+      <button class="day-zoom-btn" onclick="setDayZoom(1)">&#43;</button>
+      <button class="day-zoom-fit active" id="btnZoomFit" onclick="setDayZoomFit()">&#8862; Ver todas</button>
+      <button class="day-zoom-fit" id="btnZoomFull" onclick="setDayZoomFull()">&#8861; Detalle</button>
+    </div>
+    <div class="day-hint">
+      <svg viewBox="0 0 16 16" width="11" height="11"><rect x="2" y="2" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="5" y1="8" x2="11" y2="8" stroke="currentColor" stroke-width="1.5"/></svg>
+      Doble click en un horario vacío para bloquearlo · Click simple para nuevo turno
+    </div>
+    <div class="day-wrap">
+      <div class="day-header-row">
+        <div class="day-time-col"></div>
+        <div class="day-profs-scroll" id="dayProfsScroll">
+          <div class="day-profs-inner" id="dayProfsInner"></div>
+        </div>
+      </div>
+      <div class="day-body-row">
+        <div class="day-time-labels" id="dayTimeLabels"></div>
+        <div class="day-grid-scroll" id="dayGridScroll">
+          <div class="day-grid-inner" id="dayGridInner"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTEXT MENU -->
+<div class="ctx" id="ctxMenu" style="display:none;">
+  <div class="ctx-hdr"><div class="ctx-nm" id="ctxName">—</div><div class="ctx-dt" id="ctxDetail">—</div></div>
+  <div class="ctx-it" onclick="setStatus('confirmado')"><div class="cdot" style="background:var(--s-confirmado)"></div>Marcar Confirmado</div>
+  <div class="ctx-it" onclick="setStatus('completado')"><div class="cdot" style="background:var(--s-completado)"></div>Marcar Completado</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-it" onclick="setStatus('cancelado-c')"><div class="cdot" style="background:var(--s-cancelado-c)"></div>Cancelado por clienta</div>
+  <div class="ctx-it red" onclick="setStatus('cancelado-l')"><div class="cdot" style="background:var(--s-cancelado-l)"></div>Cancelado por el local</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-it red" onclick="eliminarTurno()">
+    <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>Eliminar turno
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="mo" id="mo" onclick="if(event.target===this)document.getElementById('mo').classList.remove('open')">
+  <div class="mb">
+    <div class="mt" id="moTitle">—</div>
+    <div id="moContent"></div>
+    <div class="ma">
+      <button class="mc" onclick="document.getElementById('mo').classList.remove('open')">Cancelar</button>
+      <button class="msv" onclick="saveMo()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATOS ────────────────────────────────────────────────────
+let PROFS = [];
+let SRVS = [];
+let appts = [];
+let blocks = [];
+
+const HOURS = [9,10,11,12,13,14,15,16,17,18,19];
+const DS = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+const MONTHS = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+let weekOffset = 0, curView = 'week', activeId = null, curModal = null, editIdx = null, curDayDate = null;
+
+// ── API ──────────────────────────────────────────────────────
+const API_BASE = 'https://porto-estudio-avelinas-api.67iz4w.easypanel.host';
+let API_ONLINE = false;
+
+async function api(method, path, body) {
+  try {
+    const opts = { method, headers: { 'Content-Type': 'application/json' } };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(API_BASE + path, opts);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      const e = new Error(err.error || `HTTP ${res.status}`);
+      e.status = res.status;
+      throw e;
+    }
+    return res.status === 204 ? null : res.json();
+  } catch (err) {
+    console.warn(`API ${method} ${path}:`, err.message);
+    if (err.status) throw err;
+    return null;
+  }
+}
+
+async function checkBackend() {
+  try {
+    const r = await fetch(API_BASE + '/health', { signal: AbortSignal.timeout(3000) });
+    const data = await r.json();
+    API_ONLINE = data.status === 'ok';
+    if (API_ONLINE) document.getElementById('apiStatus').classList.add('show');
+  } catch (_) { API_ONLINE = false; }
+}
+
+// ── CARGA DE DATOS ───────────────────────────────────────────
+async function loadProfesionales() {
+  const data = await api('GET', '/api/profesionales');
+  if (!data?.length) return;
+  PROFS.length = 0;
+  data.forEach(p => PROFS.push({ id: p.id, name: p.nombre, ini: p.iniciales, color: p.color, foto_url: p.foto_url || null, servicios: null }));
+  const BATCH = 4;
+  for (let i = 0; i < PROFS.length; i += BATCH) {
+    await Promise.all(PROFS.slice(i, i + BATCH).map(async p => {
+      if (!p.id) return;
+      const srvs = await api('GET', `/api/profesionales/${p.id}/servicios`);
+      if (srvs?.length) p.servicios = srvs.map(s => s.nombre);
+    }));
+  }
+}
+
+async function loadServicios() {
+  const data = await api('GET', '/api/servicios');
+  if (!data?.length) return;
+  SRVS.length = 0;
+  data.forEach(s => SRVS.push({ id: s.id, name: s.nombre, cat: s.categoria, price: s.precio, dur: typeof s.duracion === 'number' ? s.duracion + ' min' : s.duracion, on: s.activo }));
+}
+
+async function loadTurnos(fechaISO) {
+  const data = await api('GET', `/api/turnos?fecha=${fechaISO}`);
+  const targetDate = curDayDate || getWeekDates(weekOffset)[1];
+  if (!data) { renderDay(targetDate); return; }
+  appts = data.map(t => {
+    const profIdx = PROFS.findIndex(p => p.name === t.profesional_nombre);
+    const [hh, mm] = t.hora_inicio.slice(0, 5).split(':').map(Number);
+    const dow = new Date(t.fecha.slice(0,10) + 'T12:00:00').getDay();
+    return { id: t.id, name: t.cliente_nombre, service: t.servicio_nombre, prof: profIdx >= 0 ? profIdx : 0, day: dow === 0 ? 7 : dow, hour: hh, min: mm, dur: t.duracion_min, status: t.estado.replace('cancelado_cliente','cancelado-c').replace('cancelado_local','cancelado-l') };
+  });
+  renderDay(targetDate);
+}
+
+async function loadTurnosSemana(fechaDesde, fechaHasta) {
+  const data = await api('GET', `/api/turnos?fecha_desde=${fechaDesde}&fecha_hasta=${fechaHasta}`);
+  if (!data) { renderWeek(getWeekDates(weekOffset)); return; }
+  appts = data.map(t => {
+    const profIdx = PROFS.findIndex(p => p.name === t.profesional_nombre);
+    const [hh, mm] = t.hora_inicio.slice(0, 5).split(':').map(Number);
+    const dow = new Date(t.fecha.slice(0,10) + 'T12:00:00').getDay();
+    return { id: t.id, name: t.cliente_nombre, service: t.servicio_nombre, prof: profIdx >= 0 ? profIdx : 0, day: dow === 0 ? 7 : dow, hour: hh, min: mm, dur: t.duracion_min, status: t.estado.replace('cancelado_cliente','cancelado-c').replace('cancelado_local','cancelado-l') };
+  });
+  renderWeek(getWeekDates(weekOffset));
+}
+
+async function loadBloqueos(fechaISO) {
+  const data = await api('GET', `/api/bloqueos?fecha=${fechaISO}`);
+  if (!data) return;
+  const dow = new Date(fechaISO + 'T12:00:00').getDay() || 7;
+  blocks = blocks.filter(b => b.day !== dow);
+  data.forEach(b => {
+    const profIdx = PROFS.findIndex(p => p.name === b.profesional_nombre);
+    blocks.push({ id: b.id, prof: profIdx >= 0 ? profIdx : 0, day: dow, hour: parseInt(b.hora_inicio.slice(0, 2)) });
+  });
+}
+
+// ── CALENDARIO ───────────────────────────────────────────────
+function getWeekDates(off) {
+  const now = new Date(), dow = now.getDay();
+  const mon = new Date(now);
+  mon.setDate(now.getDate() - (dow === 0 ? 6 : dow - 1) + off * 7);
+  return Array.from({length:7}, (_,i) => { const d = new Date(mon); d.setDate(mon.getDate()+i); return d; });
+}
+
+function fmtPeriod(days) {
+  const a = days[0], b = days[6];
+  return a.getMonth() === b.getMonth()
+    ? `${a.getDate()} – ${b.getDate()} de ${MONTHS[a.getMonth()]} ${a.getFullYear()}`
+    : `${a.getDate()} ${MONTHS[a.getMonth()]} – ${b.getDate()} ${MONTHS[b.getMonth()]} ${b.getFullYear()}`;
+}
+
+function fmtFecha(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function changeWeek(d) { weekOffset += d; renderCal(); }
+function goToday() { weekOffset = 0; renderCal(); }
+
+function setView(v) {
+  curView = v;
+  document.getElementById('weekView').style.display = v === 'week' ? '' : 'none';
+  document.getElementById('dayView').style.display = v === 'day' ? '' : 'none';
+  document.getElementById('btnWeek').classList.toggle('active', v === 'week');
+  document.getElementById('btnDay').classList.toggle('active', v === 'day');
+  renderCal();
+}
+
+function renderCal() {
+  const days = getWeekDates(weekOffset);
+  document.getElementById('calPeriod').textContent = fmtPeriod(days);
+  if (!curDayDate) curDayDate = days[1];
+  if (API_ONLINE) {
+    if (curView === 'week') loadTurnosSemana(fmtFecha(days[1]), fmtFecha(days[6]));
+    else { loadTurnos(fmtFecha(curDayDate)); loadBloqueos(fmtFecha(curDayDate)); }
+  } else {
+    if (curView === 'week') renderWeek(days);
+    else renderDay(curDayDate);
+  }
+}
+
+// WEEK VIEW
+function renderWeek(days) {
+  const today = new Date();
+  const work = days.slice(0, 7);
+  const hdr = document.getElementById('weekHeader');
+  hdr.style.gridTemplateColumns = '52px ' + work.map(() => '1fr').join(' ');
+  hdr.innerHTML = '<div style="width:52px"></div>' + work.map((d, i) => {
+    const t = d.toDateString() === today.toDateString();
+    return `<div class="week-day-head${t?' today':''}" onclick="switchToDay(${i})" title="Ver día"><span class="dn">${d.getDate()}</span>${DS[d.getDay()]}</div>`;
+  }).join('');
+  document.getElementById('weekTimes').innerHTML = HOURS.map(h => `<div class="tsl">${h}:00</div>`).join('');
+  const grid = document.getElementById('weekGrid');
+  grid.style.gridTemplateColumns = work.map(() => '1fr').join(' ');
+  grid.innerHTML = '';
+  work.forEach(d => {
+    const col = document.createElement('div'); col.className = 'week-col';
+    const colDow = d.getDay() === 0 ? 7 : d.getDay();
+    HOURS.forEach(() => { const hl = document.createElement('div'); hl.className = 'hr-line'; col.appendChild(hl); });
+    appts.filter(a => a.day === colDow).forEach(a => col.appendChild(makeBlock(a)));
+    grid.appendChild(col);
+  });
+}
+
+function switchToDay(colIdx) {
+  curDayDate = getWeekDates(weekOffset).slice(0,7)[colIdx];
+  setView('day');
+}
+
+// DAY VIEW
+let dayColWidth = 0;
+const DAY_COL_MIN = 70, DAY_COL_MAX = 220, DAY_COL_STEP = 20, DAY_COL_DEFAULT = 160;
+
+function getDayColWidth() {
+  if (dayColWidth > 0) return dayColWidth;
+  const scrollEl = document.getElementById('dayGridScroll');
+  if (!scrollEl) return DAY_COL_DEFAULT;
+  return Math.max(Math.floor((scrollEl.clientWidth || 800) / Math.max(PROFS.length, 1)), DAY_COL_MIN);
+}
+
+function applyDayColWidth() {
+  const w = getDayColWidth();
+  document.querySelectorAll('.day-prof-col').forEach(el => el.style.width = w+'px');
+  document.querySelectorAll('.day-prof-head').forEach(el => el.style.width = w+'px');
+  const label = document.getElementById('dayZoomLabel');
+  if (label) label.textContent = dayColWidth === 0 ? 'Auto' : Math.round((dayColWidth/DAY_COL_DEFAULT)*100)+'%';
+  document.getElementById('btnZoomFit')?.classList.toggle('active', dayColWidth === 0);
+  document.getElementById('btnZoomFull')?.classList.toggle('active', dayColWidth === DAY_COL_DEFAULT);
+}
+
+function setDayZoom(dir) {
+  const current = dayColWidth > 0 ? dayColWidth : getDayColWidth();
+  dayColWidth = Math.min(DAY_COL_MAX, Math.max(DAY_COL_MIN, current + dir * DAY_COL_STEP));
+  applyDayColWidth();
+}
+function setDayZoomFit() { dayColWidth = 0; applyDayColWidth(); }
+function setDayZoomFull() { dayColWidth = DAY_COL_DEFAULT; applyDayColWidth(); }
+
+function renderDay(date) {
+  if (!date) return;
+  const dow = date.getDay() === 0 ? 7 : date.getDay();
+  const colW = getDayColWidth();
+
+  document.getElementById('dayProfsInner').innerHTML = PROFS.map((p, pi) => {
+    const allBlocked = HOURS.every(h => blocks.some(b => b.prof===pi && b.day===dow && b.hour===h));
+    return `<div class="day-prof-head" style="width:${colW}px">
+      <div class="day-prof-av" style="background:${p.color}">${p.foto_url ? `<img src="${p.foto_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" onerror="this.style.display='none'">` : p.ini}</div>
+      <div class="day-prof-name" title="${p.name}">${p.name}</div>
+      <button class="day-block-all${allBlocked?' blocked':''}" onclick="toggleBlockDay(${pi},${dow})">
+        ${allBlocked?'🔓 Desbloquear':'🔒 Bloquear día'}
+      </button>
+    </div>`;
+  }).join('');
+
+  document.getElementById('dayTimeLabels').innerHTML = HOURS.map(h => `
+    <div class="day-time-lbl-wrap">
+      <div class="day-time-lbl-hour">${h}:00</div>
+      <div class="day-time-lbl-q">:15</div>
+      <div class="day-time-lbl-q">:30</div>
+      <div class="day-time-lbl-q">:45</div>
+    </div>`).join('');
+
+  const gridInner = document.getElementById('dayGridInner');
+  gridInner.innerHTML = '';
+
+  PROFS.forEach((p, pi) => {
+    const col = document.createElement('div');
+    col.className = 'day-prof-col';
+    col.style.width = getDayColWidth() + 'px';
+
+    HOURS.forEach(h => {
+      const isBlocked = blocks.some(b => b.prof===pi && b.day===dow && b.hour===h);
+      const cell = document.createElement('div');
+      cell.className = 'day-hr-cell' + (isBlocked ? ' is-blocked' : '');
+      let clickTimer = null;
+      cell.addEventListener('click', () => {
+        if (clickTimer) return;
+        clickTimer = setTimeout(() => { clickTimer = null; if (!isBlocked) openNewApptAt(pi, h, 0); }, 220);
+      });
+      cell.addEventListener('dblclick', e => {
+        e.stopPropagation();
+        if (clickTimer) { clearTimeout(clickTimer); clickTimer = null; }
+        toggleBlock(null, pi, dow, h);
+      });
+      cell.title = isBlocked ? 'Doble click para desbloquear' : 'Click: nuevo turno · Doble click: bloquear';
+      col.appendChild(cell);
+    });
+
+    blocks.filter(b => b.prof===pi && b.day===dow).forEach(b => {
+      const bl = document.createElement('div');
+      bl.className = 'appt st-bloqueo';
+      bl.style.cssText = `top:${(b.hour-HOURS[0])*64}px;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 10px;z-index:3;`;
+      bl.innerHTML = `<span style="font-size:.7rem;font-style:italic;">Bloqueado ${b.hour}:00</span><button class="block-btn" onclick="toggleBlock(event,${pi},${dow},${b.hour})">Desbloquear</button>`;
+      col.appendChild(bl);
+    });
+
+    appts.filter(a => a.prof===pi && a.day===dow).forEach(a => col.appendChild(makeBlock(a)));
+    gridInner.appendChild(col);
+  });
+
+  const gridScroll = document.getElementById('dayGridScroll');
+  const profsScroll = document.getElementById('dayProfsScroll');
+  gridScroll.onscroll = () => { profsScroll.scrollLeft = gridScroll.scrollLeft; };
+  setTimeout(applyDayColWidth, 10);
+}
+
+function toggleBlockDay(pi, dow) {
+  const allBlocked = HOURS.every(h => blocks.some(b => b.prof===pi && b.day===dow && b.hour===h));
+  const fecha = curDayDate ? fmtFecha(curDayDate) : null;
+  if (allBlocked) {
+    HOURS.forEach(h => {
+      const idx = blocks.findIndex(b => b.prof===pi && b.day===dow && b.hour===h);
+      if (idx >= 0) { const blk = blocks[idx]; blocks.splice(idx, 1); if (API_ONLINE && blk.id) api('DELETE', `/api/bloqueos/${blk.id}`); }
+    });
+    showToast('Día desbloqueado para ' + PROFS[pi].name);
+  } else {
+    HOURS.forEach(h => {
+      if (!blocks.some(b => b.prof===pi && b.day===dow && b.hour===h)) {
+        const nb = { prof: pi, day: dow, hour: h };
+        blocks.push(nb);
+        if (API_ONLINE && fecha && PROFS[pi].id) {
+          api('POST', '/api/bloqueos', { profesional_id: PROFS[pi].id, fecha, hora_inicio: String(h).padStart(2,'0')+':00', duracion_min: 60 }).then(r => { if (r?.id) nb.id = r.id; });
+        }
+      }
+    });
+    showToast('Día bloqueado para ' + PROFS[pi].name);
+  }
+  renderDay(curDayDate);
+}
+
+let _blockDebounce = null;
+function toggleBlock(e, pi, dow, h) {
+  if (e) e.stopPropagation();
+  const key = `${pi}-${dow}-${h}`;
+  if (_blockDebounce === key) return;
+  _blockDebounce = key;
+  setTimeout(() => { _blockDebounce = null; }, 400);
+
+  const idx = blocks.findIndex(b => b.prof===pi && b.day===dow && b.hour===h);
+  if (idx >= 0) {
+    const blk = blocks[idx]; blocks.splice(idx, 1);
+    renderDay(curDayDate);
+    if (API_ONLINE && blk.id) api('DELETE', `/api/bloqueos/${blk.id}`);
+    showToast('Horario desbloqueado');
+  } else {
+    const nb = { prof: pi, day: dow, hour: h }; blocks.push(nb);
+    renderDay(curDayDate);
+    if (API_ONLINE) {
+      const fecha = curDayDate ? fmtFecha(curDayDate) : null;
+      if (fecha) api('POST', '/api/bloqueos', { profesional_id: PROFS[pi].id, fecha, hora_inicio: String(h).padStart(2,'0')+':00', duracion_min: 60 }).then(r => { if (r?.id) nb.id = r.id; });
+    }
+    showToast('Horario bloqueado para ' + PROFS[pi].name);
+  }
+}
+
+function makeBlock(a) {
+  const HH = 64;
+  const top = (a.hour - HOURS[0]) * HH + (a.min/60) * HH;
+  const h = Math.max((a.dur/60) * HH - 4, 24);
+  const el = document.createElement('div');
+  el.className = `appt st-${a.status}`;
+  el.style.cssText = `top:${top}px;height:${h}px;`;
+  el.innerHTML = `<div class="appt-name">${a.name}</div><div class="appt-srv">${a.service} · ${a.hour}:${String(a.min).padStart(2,'0')} hs</div><button class="appt-more" onclick="openCtx(event,${a.id})">•••</button>`;
+  el.addEventListener('click', e => { if (!e.target.classList.contains('appt-more')) openCtx(e, a.id); });
+  return el;
+}
+
+// CONTEXT MENU
+function openCtx(e, id) {
+  e.stopPropagation(); activeId = id;
+  const a = appts.find(x => x.id === id);
+  document.getElementById('ctxName').textContent = a.name;
+  document.getElementById('ctxDetail').textContent = `${a.service} · ${a.hour}:${String(a.min).padStart(2,'0')} hs · ${PROFS[a.prof]?.name || '—'}`;
+  const m = document.getElementById('ctxMenu'); m.style.display = 'block';
+  const r = e.target.getBoundingClientRect();
+  let x = r.right + 6, y = r.top;
+  if (x + 200 > window.innerWidth) x = r.left - 205;
+  if (y + 220 > window.innerHeight) y = window.innerHeight - 230;
+  m.style.left = x + 'px'; m.style.top = y + 'px';
+}
+
+function setStatus(s) {
+  const a = appts.find(x => x.id === activeId);
+  if (a) {
+    a.status = s; renderCal();
+    if (API_ONLINE) {
+      const estadoApi = s.replace('cancelado-c','cancelado_cliente').replace('cancelado-l','cancelado_local');
+      api('PATCH', `/api/turnos/${a.id}/estado`, { estado: estadoApi });
+    }
+  }
+  closeCtx(); showToast('Estado actualizado');
+}
+
+async function eliminarTurno() {
+  if (!confirm('¿Eliminar este turno?')) return;
+  const a = appts.find(x => x.id === activeId);
+  if (a) {
+    appts = appts.filter(x => x.id !== activeId);
+    if (API_ONLINE) await api('DELETE', `/api/turnos/${a.id}`);
+    renderCal(); showToast('Turno eliminado');
+  }
+  closeCtx();
+}
+
+function closeCtx() { document.getElementById('ctxMenu').style.display = 'none'; activeId = null; }
+document.addEventListener('click', e => { if (!e.target.closest('.ctx') && !e.target.closest('.appt-more')) closeCtx(); });
+
+// MODAL NUEVO TURNO
+function openNewApptAt(profIdx, hour, min) {
+  curModal = 'newAppt'; editIdx = null;
+  document.getElementById('moTitle').textContent = 'Nuevo turno';
+  const today = fmtFecha(curDayDate || new Date());
+  const horaStr = String(hour).padStart(2,'0') + ':' + String(min).padStart(2,'0');
+  document.getElementById('moContent').innerHTML = `
+    <div class="mf"><label class="ml">Clienta</label><input class="mi" id="apptNombre" placeholder="Nombre y apellido"/></div>
+    <div class="mf"><label class="ml">Servicio</label><select class="ms" id="apptServicio" onchange="filtrarProfsPorServicio()">${SRVS.map(s=>`<option>${s.name}</option>`).join('')}</select></div>
+    <div class="mf"><label class="ml">Profesional</label><select class="ms" id="apptProf">${PROFS.map((p,i)=>`<option${i===profIdx?' selected':''}>${p.name}</option>`).join('')}</select></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="mf"><label class="ml">Fecha</label><input class="mi" type="date" id="apptFecha" value="${today}"/></div>
+      <div class="mf"><label class="ml">Horario</label><select class="ms" id="apptHora">${(()=>{const s=[];for(let h=9;h<=19;h++){s.push(String(h).padStart(2,'0')+':00');if(h<19)s.push(String(h).padStart(2,'0')+':30');}return s.map(t=>`<option value="${t}"${t===horaStr?' selected':''}>${t}</option>`).join('');})()}</select></div>
+    </div>`;
+  document.getElementById('mo').classList.add('open');
+  setTimeout(() => document.getElementById('apptNombre')?.focus(), 100);
+}
+
+function showModal(type) {
+  curModal = type;
+  if (type === 'newAppt') {
+    openNewApptAt(0, 9, 0);
+  }
+}
+
+async function saveMo() {
+  if (curModal === 'newAppt') {
+    const nombre = document.getElementById('apptNombre')?.value?.trim();
+    const servNombre = document.getElementById('apptServicio')?.value;
+    const profNombre = document.getElementById('apptProf')?.value;
+    const fecha = document.getElementById('apptFecha')?.value;
+    const hora = document.getElementById('apptHora')?.value;
+    if (!nombre || !fecha || !hora) { showToast('Completá todos los campos'); return; }
+    document.getElementById('mo').classList.remove('open');
+    const srv = SRVS.find(s => s.name === servNombre);
+    const profIdx = PROFS.findIndex(p => p.name === profNombre);
+    if (API_ONLINE && srv?.id && PROFS[profIdx]?.id) {
+      try {
+        const result = await api('POST', '/api/turnos', {
+          cliente_nombre: nombre,
+          servicio_id: srv.id,
+          servicio_nombre: srv.name,
+          profesional_id: PROFS[profIdx].id,
+          profesional_nombre: PROFS[profIdx].name,
+          fecha,
+          hora_inicio: hora + ':00',
+          duracion_min: parseInt(srv.dur) || 60,
+          estado: 'confirmado'
+        });
+        if (result) { showToast('Turno creado ✓'); renderCal(); }
+        else showToast('Error al crear el turno');
+      } catch (err) {
+        if (err.status === 409) showToast('⚠️ Ese horario ya está ocupado');
+        else showToast('Error al crear el turno');
+      }
+    } else {
+      const [hh, mm] = hora.split(':').map(Number);
+      const dow = new Date(fecha + 'T12:00:00').getDay();
+      appts.push({ id: Date.now(), name: nombre, service: servNombre, prof: profIdx >= 0 ? profIdx : 0, day: dow === 0 ? 7 : dow, hour: hh, min: mm || 0, dur: 60, status: 'confirmado' });
+      renderCal(); showToast('Turno creado (sin conexión)');
+    }
+  }
+}
+
+function filtrarProfsPorServicio() {
+  const srvSelect = document.getElementById('apptServicio');
+  const profSelect = document.getElementById('apptProf');
+  if (!srvSelect || !profSelect) return;
+  const srvNombre = srvSelect.value;
+  const prevVal = profSelect.value;
+  const profsFiltradas = PROFS.filter(p => !p.servicios?.length || p.servicios.includes(srvNombre));
+  profSelect.innerHTML = profsFiltradas.length
+    ? profsFiltradas.map(p => `<option${p.name === prevVal ? ' selected' : ''}>${p.name}</option>`).join('')
+    : '<option disabled>Ninguna profesional ofrece este servicio</option>';
+}
+
+// TOAST
+function showToast(m) {
+  const t = document.getElementById('toast');
+  t.textContent = m; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// POLLING
+setInterval(() => {
+  if (!API_ONLINE) return;
+  if (curView === 'week') { const days = getWeekDates(weekOffset); loadTurnosSemana(fmtFecha(days[1]), fmtFecha(days[6])); }
+  else if (curDayDate) { loadTurnos(fmtFecha(curDayDate)); loadBloqueos(fmtFecha(curDayDate)); }
+}, 60000);
+
+// ── INIT ─────────────────────────────────────────────────────
+(async function init() {
+  await checkBackend();
+  if (API_ONLINE) {
+    await Promise.all([loadProfesionales(), loadServicios()]);
+    const days = getWeekDates(weekOffset);
+    await loadTurnosSemana(fmtFecha(days[1]), fmtFecha(days[6]));
+  } else {
+    renderCal();
+    console.info('Backend no disponible — modo sin conexión');
+  }
+})();
+</script>
+</body>
+</html>
