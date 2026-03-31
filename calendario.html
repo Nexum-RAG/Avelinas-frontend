@@ -372,12 +372,13 @@ async function loadBloqueos(fechaISO) {
   data.forEach(b => {
     const profIdx = PROFS.findIndex(p => p.name === b.profesional_nombre);
     blocks.push({
-  id:   b.id,
-  prof: profIdx >= 0 ? profIdx : 0,
-  day:  dow,
-  hour: parseInt(b.hora_inicio.slice(0, 2)),
-  duracion_min: b.duracion_min || 60,
-});
+      id: b.id,
+      prof: profIdx >= 0 ? profIdx : 0,
+      day: dow,
+      hour: parseInt(b.hora_inicio.slice(0, 2)),
+      duracion_min: b.duracion_min || 60,
+    });
+  });
 }
 
 // ── CALENDARIO ───────────────────────────────────────────────
