@@ -548,7 +548,7 @@ function renderDay(date) {
       const label = b.duracion_min <= 30
         ? `${String(b.hour).padStart(2,'0')}:${String(b.min).padStart(2,'0')}`
         : `${String(b.hour).padStart(2,'0')}:${String(b.min).padStart(2,'0')} — ${calcEndTime(b.hour, b.min, b.duracion_min)}`;
-      bl.innerHTML = `<span style="font-size:.65rem;font-style:italic;">🔒 ${label}</span><button class="block-btn" onclick="toggleBlock(event,${pi},${dow},${b.hour},${b.min})">✕</button>`;
+      bl.innerHTML = `<span style="font-size:.7rem;font-style:italic;">Bloqueado ${label}</span><button class="block-btn" onclick="toggleBlock(event,${pi},${dow},${b.hour},${b.min})">Desbloquear</button>`;
       col.appendChild(bl);
     });
 
