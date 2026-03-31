@@ -585,9 +585,16 @@ function toggleBlock(e, pi, dow, h) {
   } else {
     const nb = { prof: pi, day: dow, hour: h }; blocks.push(nb);
     renderDay(curDayDate);
-    if (API_ONLINE) {
-      const fecha = curDayDate ? fmtFecha(curDayDate) : null;
-      if (fecha) api('POST', '/api/bloqueos', { profesional_id: PROFS[pi].id, fecha, hora_inicio: String(h).padStart(2,'0')+':00', duracion_min: 60 }).then(r => { if (r?.id) nb.id = r.id; });
+    console.log('Intentando crear bloqueo:', PROFS[pi].id, fmtFecha(curDayDate));
+    if (API_ONLINE && curDayDate && PROFS[pi].id) {
+      api('POST', '/api/bloqueos', {
+        profesional_id: PROFS[pi].id,
+        fecha: fmtFecha(curDayDate),
+        hora_inicio: String(h).padStart(2,'0') + ':00',
+        duracion_min: 60,
+      }).then(r => { console.log('Bloqueo creado:', r); if (r?.id) nb.id = r.id; });
+    } else {
+      console.log('No se ejecutó POST — API_ONLINE:', API_ONLINE, 'curDayDate:', curDayDate, 'prof.id:', PROFS[pi]?.id);
     }
     showToast('Horario bloqueado para ' + PROFS[pi].name);
   }
