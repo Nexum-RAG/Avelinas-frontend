@@ -371,8 +371,13 @@ async function loadBloqueos(fechaISO) {
   blocks = blocks.filter(b => b.day !== dow);
   data.forEach(b => {
     const profIdx = PROFS.findIndex(p => p.name === b.profesional_nombre);
-    blocks.push({ id: b.id, prof: profIdx >= 0 ? profIdx : 0, day: dow, hour: parseInt(b.hora_inicio.slice(0, 2)) });
-  });
+    blocks.push({
+  id:   b.id,
+  prof: profIdx >= 0 ? profIdx : 0,
+  day:  dow,
+  hour: parseInt(b.hora_inicio.slice(0, 2)),
+  duracion_min: b.duracion_min || 60,
+});
 }
 
 // ── CALENDARIO ───────────────────────────────────────────────
@@ -529,7 +534,7 @@ function renderDay(date) {
     blocks.filter(b => b.prof===pi && b.day===dow).forEach(b => {
       const bl = document.createElement('div');
       bl.className = 'appt st-bloqueo';
-      bl.style.cssText = `top:${(b.hour-HOURS[0])*64}px;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 10px;z-index:3;`;
+      bl.style.cssText=`top:${(b.hour-HOURS[0])*64}px;height:${(b.duracion_min||60)/60*64}px;display:flex;align-items:center;justify-content:space-between;padding:0 10px;z-index:3;`;
       bl.innerHTML = `<span style="font-size:.7rem;font-style:italic;">Bloqueado ${b.hour}:00</span><button class="block-btn" onclick="toggleBlock(event,${pi},${dow},${b.hour})">Desbloquear</button>`;
       col.appendChild(bl);
     });
