@@ -250,6 +250,12 @@
       .eyebrow{color:#c8d3b0;}.eyebrow::before{background:#c8d3b0;}
       .btn-ghost{color:rgba(253,250,245,0.8);}
     }
+    @media (max-width: 768px) {
+  .franq-grid {
+    grid-template-columns: 1fr !important;
+    gap: 32px !important;
+  }
+}
   </style>
 </head>
 <body>
@@ -489,7 +495,7 @@
     <div class="sec-label">Crecé con nosotras</div>
     <h2 class="sec-title">Franquicias <em>Avelinas</em></h2>
   </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:72px;margin-top:56px;align-items:center;" class="reveal">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:72px;margin-top:56px;align-items:center;" class="reveal franq-grid">
     <div>
       <p style="font-size:.94rem;line-height:1.8;color:var(--ink-soft);margin-bottom:28px;">Si querés llevar la experiencia Avelinas a tu ciudad, estamos abriendo franquicias. Más de 10 años de experiencia, marca reconocida y todo el soporte para que tu negocio arranque con el pie derecho.</p>
       <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:32px;">
