@@ -786,9 +786,9 @@ if(cumple)lines.push(`🎂 *Cumpleaños:* ${cumple}`);
         });
         const pagoData=await pagoRes.json();
         if(pagoData.init_point){
-          showToast('Redirigiendo al pago...');
-          setTimeout(()=>window.open(pagoData.sandbox_init_point||pagoData.init_point,'_blank'),1000);
-        } else {
+  showToast('Redirigiendo al pago...');
+  setTimeout(()=>window.open(pagoData.init_point,'_blank'),1000);
+} else {
           // Fallback a WhatsApp si falla el pago
           showToast('Error al generar pago, redirigiendo a WhatsApp...');
           setTimeout(()=>window.open('https://wa.me/542494623097?text='+encodeURIComponent(lines.join('\n')),'_blank'),1200);
