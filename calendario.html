@@ -432,7 +432,7 @@ function renderCal() {
   document.getElementById('calPeriod').textContent = fmtPeriod(days);
   if (!curDayDate) curDayDate = days[1];
   if (API_ONLINE) {
-    if (curView === 'week') loadTurnosSemana(fmtFecha(days[1]), fmtFecha(days[6]));
+    if (curView === 'week') loadTurnosSemana(fmtFecha(days[0]), fmtFecha(days[6]));
     else { loadTurnos(fmtFecha(curDayDate)); loadBloqueos(fmtFecha(curDayDate)); }
   } else {
     if (curView === 'week') renderWeek(days);
@@ -783,7 +783,7 @@ function showToast(m) {
 // ── POLLING ──────────────────────────────────────────────────
 setInterval(() => {
   if (!API_ONLINE) return;
-  if (curView === 'week') { const days = getWeekDates(weekOffset); loadTurnosSemana(fmtFecha(days[1]), fmtFecha(days[6])); }
+  if (curView === 'week') { const days = getWeekDates(weekOffset); loadTurnosSemana(fmtFecha(days[0]), fmtFecha(days[6])); }
   else if (curDayDate) { loadTurnos(fmtFecha(curDayDate)); loadBloqueos(fmtFecha(curDayDate)); }
 }, 60000);
 
