@@ -270,6 +270,23 @@
 </div>
 
 <div class="toast" id="toast"></div>
+<div id="loginScreen" style="display:none;position:fixed;inset:0;background:var(--cream);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:var(--white);border-radius:24px;padding:48px 40px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.12);">
+    <div style="text-align:center;margin-bottom:32px;">
+      <img src="https://lh3.googleusercontent.com/d/1qybhZ-VI4Kyjer-kWVeVCrQOlZS47Jnc" style="height:56px;width:auto;margin-bottom:16px;" alt="Avelinas"/>
+      <div style="font-family:var(--serif);font-size:1.4rem;font-weight:600;color:var(--ink);">Calendario</div>
+    </div>
+    <div style="margin-bottom:14px;">
+      <label style="font-size:.74rem;color:var(--ink-soft);display:block;margin-bottom:5px;">Email</label>
+      <input class="mi" type="email" id="loginEmail" placeholder="admin@avelinas.com" style="width:100%;" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <div style="margin-bottom:22px;">
+      <label style="font-size:.74rem;color:var(--ink-soft);display:block;margin-bottom:5px;">Contraseña</label>
+      <input class="mi" type="password" id="loginPassword" placeholder="••••••••" style="width:100%;" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <button id="loginBtn" onclick="doLogin()" style="width:100%;background:var(--olive);color:var(--white);border:none;padding:13px;border-radius:50px;font-family:var(--sans);font-size:.86rem;cursor:pointer;">Ingresar</button>
+  </div>
+</div>  
 
 <script>
 // ── CONSTANTES ───────────────────────────────────────────────
@@ -293,7 +310,7 @@ let API_ONLINE = false;
 
 async function api(method, path, body) {
   try {
-    const opts = { method, headers: { 'Content-Type': 'application/json' } };
+    const opts = { method, headers: { 'Content-Type': 'application/json', ...(AUTH_TOKEN ? { 'Authorization': `Bearer ${AUTH_TOKEN}` } : {}) } };
     if (body) opts.body = JSON.stringify(body);
     const res = await fetch(API_BASE + path, opts);
     if (!res.ok) {
@@ -771,14 +788,84 @@ setInterval(() => {
 }, 60000);
 
 // ── INIT ─────────────────────────────────────────────────────
-(async function init() {
+let socket = null;
+let AUTH_TOKEN = localStorage.getItem('avelinas_token') || null;
+
+function mostrarLogin() {
+  document.querySelector('.topbar').style.display = 'none';
+  document.querySelector('.content').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+}
+
+function ocultarLogin() {
+  document.querySelector('.topbar').style.display = '';
+  document.querySelector('.content').style.display = '';
+  document.getElementById('loginScreen').style.display = 'none';
+}
+
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  if (!email || !password) { showToast('Completá todos los campos'); return; }
+  const btn = document.getElementById('loginBtn');
+  btn.textContent = 'Ingresando...'; btn.disabled = true;
+  try {
+    const res = await fetch(API_BASE + '/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (!res.ok) { showToast(data.error || 'Error al ingresar'); btn.textContent = 'Ingresar'; btn.disabled = false; return; }
+    AUTH_TOKEN = data.token;
+    localStorage.setItem('avelinas_token', data.token);
+    ocultarLogin();
+    await initCalendario();
+  } catch (e) {
+    showToast('Error de conexión'); btn.textContent = 'Ingresar'; btn.disabled = false;
+  }
+}
+
+function doLogout() {
+  if (socket) { socket.disconnect(); socket = null; }
+  AUTH_TOKEN = null;
+  localStorage.removeItem('avelinas_token');
+  mostrarLogin();
+}
+
+async function initCalendario() {
   await checkBackend();
   if (API_ONLINE) {
     await Promise.all([loadProfesionales(), loadServicios()]);
     const days = getWeekDates(weekOffset);
-    await loadTurnosSemana(fmtFecha(days[1]), fmtFecha(days[6]));
+    await loadTurnosSemana(fmtFecha(days[0]), fmtFecha(days[6]));
+    await loadBloqueos(fmtFecha(curDayDate || days[1]));
   } else {
     renderCal();
+  }
+  socket = io(API_BASE, { auth: { token: AUTH_TOKEN } });
+  // ... resto de los listeners de socket
+}
+
+(async function init() {
+  if (AUTH_TOKEN) {
+    try {
+      const res = await fetch(API_BASE + '/api/turnos?fecha=' + fmtFecha(new Date()), {
+        headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+      });
+      if (res.status === 401) {
+        AUTH_TOKEN = null;
+        localStorage.removeItem('avelinas_token');
+        mostrarLogin();
+        return;
+      }
+      ocultarLogin();
+      await initCalendario();
+    } catch(e) {
+      mostrarLogin();
+    }
+  } else {
+    mostrarLogin();
   }
 })();
 </script>
