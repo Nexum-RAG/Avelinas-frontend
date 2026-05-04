@@ -238,9 +238,40 @@
       .srv-header,.tienda-hdr{flex-direction:column;align-items:flex-start;}
     }
     @media(max-width:600px){
+      /* Grids */
       .srv-grid,.prod-grid{grid-template-columns:1fr;}
-      .ssb-grid,.prof-grid{grid-template-columns:1fr;}.tg{grid-template-columns:repeat(3,1fr);}
-      .hero-left{padding:52px 22px;}.prizes{grid-template-columns:1fr;}
+      .ssb-grid,.prof-grid{grid-template-columns:1fr;}
+      .tg{grid-template-columns:repeat(3,1fr);}
+      .prizes{grid-template-columns:1fr;}
+      .form-row{grid-template-columns:1fr;}
+      /* Hero */
+      .hero-left{padding:52px 18px 48px;}
+      .hero-title{font-size:clamp(2.4rem,9vw,3.2rem);margin-bottom:18px;}
+      .hero-sub{font-size:.88rem;margin-bottom:28px;}
+      .hero-actions{flex-direction:column;align-items:flex-start;gap:14px;}
+      .btn-solid{padding:14px 28px;font-size:.82rem;}
+      .hero-stats{gap:20px;margin-top:28px;padding-top:20px;}
+      .stat-n{font-size:1.7rem;}
+      /* Sections */
+      section{padding:52px 18px;}
+      #contacto{padding:52px 18px 40px;}
+      /* Booking widget */
+      .bw{padding:22px 18px;border-radius:18px;}
+      .bw-logo{margin-bottom:18px;padding-bottom:16px;}
+      .bw-steps{margin-bottom:20px;}
+      .bw-step{font-size:.58rem;letter-spacing:.03em;padding-bottom:7px;}
+      .bw-title{font-size:1.2rem;margin-bottom:16px;}
+      .bw-back{padding:10px 4px;min-height:44px;display:flex;align-items:center;}
+      .bw-next{padding:13px 24px;min-height:44px;}
+      .bw-nav{gap:8px;margin-top:16px;}
+      .bw-inp{padding:13px 13px;font-size:.88rem;}
+      /* Nosotras */
+      .nos-yr{font-size:5rem;}
+      .founders{flex-direction:column;gap:10px;}
+      /* Footer */
+      .footer-btm{flex-direction:column;gap:14px;text-align:center;align-items:center;}
+      /* Headings */
+      .sec-title{font-size:clamp(1.9rem,7.5vw,2.4rem);}
     }
     @media(max-width:900px){
       .hero::before{content:'';position:absolute;inset:0;background:url("https://images.unsplash.com/photo-1560066984-138dadb4c035?w=900&q=80") center/cover no-repeat;z-index:0;}
