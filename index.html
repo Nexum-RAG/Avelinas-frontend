@@ -143,6 +143,7 @@
     .bw-next{background:var(--olive);color:var(--white);border:none;padding:11px 26px;border-radius:50px;font-family:var(--sans);font-size:.82rem;cursor:pointer;transition:background .2s;}
     .bw-next:hover{background:var(--olive-mid);}
     .bw-textarea{resize:vertical;min-height:72px;line-height:1.5;font-family:var(--sans);}
+    .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;}
     #tienda{background:var(--olive-deep);color:var(--white);}
     #tienda .sec-label{color:var(--olive-pale);}
     #tienda .sec-label::before{background:var(--olive-pale);}
@@ -231,6 +232,7 @@
       .hero-left{position:relative;z-index:1;}
       nav{padding:15px 22px;}nav.scrolled{padding:11px 22px;}
       .nav-links{display:none;}.hamburger{display:flex;}
+      .nav-links.open{display:flex;flex-direction:column;position:absolute;top:100%;left:0;right:0;background:rgba(246,241,233,0.97);backdrop-filter:blur(16px);padding:16px 22px 20px;border-bottom:1px solid rgba(90,99,72,0.12);gap:20px;z-index:10;}
       section{padding:68px 22px;}
       .turnos-layout,.club-layout,.nos-layout,.cont-layout{grid-template-columns:1fr;gap:40px;}
       .srv-header,.tienda-hdr{flex-direction:column;align-items:flex-start;}
@@ -401,11 +403,16 @@
           <div class="conf-row"><span class="conf-l">Fecha</span><span class="conf-v" id="cDate">—</span></div>
           <div class="conf-row"><span class="conf-l">Horario</span><span class="conf-v" id="cTime">—</span></div>
         </div>
+        <label class="sr-only" for="bName">Nombre completo</label>
         <input class="bw-inp" type="text" placeholder="Tu nombre completo" id="bName"/>
+        <label class="sr-only" for="bTel">Teléfono o WhatsApp</label>
         <input class="bw-inp" type="tel" placeholder="Tu teléfono / WhatsApp (ej: 2494 123456)" id="bTel"/>
+        <label class="sr-only" for="bDni">DNI</label>
         <input class="bw-inp" type="text" placeholder="DNI" id="bDni"/>
-      <textarea class="bw-inp bw-textarea" placeholder="Aclaraciones o consultas (opcional)" id="bNota" rows="3"></textarea>
-<input class="bw-inp" type="text" placeholder="Fecha de cumpleaños, ej: 15/03 (opcional)" id="bCumple" maxlength="5"/>
+        <label class="sr-only" for="bNota">Aclaraciones o consultas</label>
+        <textarea class="bw-inp bw-textarea" placeholder="Aclaraciones o consultas (opcional)" id="bNota" rows="3"></textarea>
+        <label class="sr-only" for="bCumple">Fecha de cumpleaños</label>
+        <input class="bw-inp" type="text" placeholder="Fecha de cumpleaños, ej: 15/03 (opcional)" id="bCumple" maxlength="5"/>
         <div class="bw-nav"><button class="bw-back" onclick="goStep(4)">← Atrás</button><button class="bw-next" onclick="confirmB()">Abonar seña 💳</button></div>
       </div>
     </div>
@@ -547,10 +554,12 @@
   </div>
 </section>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="alert" aria-live="polite"></div>
 
 <script>
   window.addEventListener('scroll',()=>{document.getElementById('nav').classList.toggle('scrolled',scrollY>40);});
+  document.getElementById('hamburger').addEventListener('click',()=>{document.querySelector('.nav-links').classList.toggle('open');});
+  document.querySelectorAll('.nav-links a').forEach(a=>a.addEventListener('click',()=>document.querySelector('.nav-links').classList.remove('open')));
   const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){setTimeout(()=>e.target.classList.add('vis'),60);}});},{threshold:0});
   document.querySelectorAll('.reveal').forEach(r=>io.observe(r));
   window.addEventListener('load',()=>{setTimeout(()=>{document.querySelectorAll('.reveal').forEach(r=>{const rect=r.getBoundingClientRect();if(rect.top<window.innerHeight+50&&rect.bottom>0)r.classList.add('vis');});},80);});
