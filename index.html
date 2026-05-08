@@ -72,7 +72,7 @@
     .srv-card:hover .srv-desc{color:rgba(255,255,255,.65);}
     .srv-arrow{position:absolute;bottom:22px;right:24px;font-size:1rem;opacity:0;color:rgba(255,255,255,.7);transition:opacity .25s;}
     .srv-card:hover .srv-arrow{opacity:1;}
-    #turnos{background:var(--cream);}
+    #turnos{background:var(--cream);position:relative;}
     .turnos-layout{display:grid;grid-template-columns:1fr 1.45fr;gap:72px;align-items:start;margin-top:56px;}
     .ti h3{font-family:var(--serif);font-size:1.45rem;font-weight:300;margin-bottom:14px;}
     .ti p{font-size:.88rem;line-height:1.75;color:var(--ink-soft);margin-bottom:28px;}
@@ -312,7 +312,7 @@
       <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke="#484b3e" stroke-width="1.5" stroke-linejoin="round" fill="none"/><line x1="3" y1="6" x2="21" y2="6" stroke="#484b3e" stroke-width="1.5"/><path d="M16 10a4 4 0 01-8 0" stroke="#484b3e" stroke-width="1.5" fill="none"/></svg>
       <div class="cart-n" id="cartCount">0</div>
     </div>
-    <a href="#turnos" class="nav-btn">Reservar turno</a>
+    <span class="nav-btn" style="opacity:.45;cursor:not-allowed;pointer-events:none;">Reservar turno</span>
     <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
   </div>
 </nav>
@@ -323,7 +323,7 @@
     <h1 class="hero-title">Un lugar para<br><em>encontrarte</em><br>con vos misma</h1>
     <p class="hero-sub">Profesionalismo, calidez y las últimas tendencias en un solo lugar. Reservá tu turno online en segundos.</p>
     <div class="hero-actions">
-      <a href="#turnos" class="btn-solid">Reservar turno</a>
+      <span class="btn-solid" style="opacity:.45;cursor:not-allowed;pointer-events:none;">Reservar turno</span>
       <a href="#servicios" class="btn-ghost">Ver servicios</a>
     </div>
     <div class="hero-stats">
@@ -365,6 +365,14 @@
 </section>
 
 <section id="turnos">
+  <div style="position:absolute;inset:0;background:rgba(246,241,233,0.85);backdrop-filter:blur(6px);z-index:10;display:flex;align-items:center;justify-content:center;border-radius:12px;">
+  <div style="text-align:center;padding:32px;">
+    <div style="font-size:2rem;margin-bottom:12px;">🔧</div>
+    <div style="font-family:var(--serif);font-size:1.6rem;color:var(--ink);margin-bottom:10px;">Turnos temporalmente deshabilitados</div>
+    <p style="color:var(--ink-soft);font-size:.9rem;margin-bottom:18px;">Estamos preparando el sistema. Por ahora podés llamarnos o escribirnos.</p>
+    <a href="https://wa.me/542494623097" target="_blank" class="btn-solid">Escribir por WhatsApp →</a>
+  </div>
+</div>
   <div class="reveal">
     <div class="sec-label">Reservá online</div>
     <h2 class="sec-title">Pedí tu <em>turno</em><br>cuando quieras</h2>
@@ -692,13 +700,9 @@
   }
 
   function scrollToBooking(cat){
-    document.getElementById('turnos').scrollIntoView({behavior:'smooth'});
-    setTimeout(()=>{
-      if(!serviciosData.length)return;
-      const match=[...new Set(serviciosData.map(s=>s.categoria))].find(c=>c.toLowerCase().includes(cat.toLowerCase().split(' ')[0]));
-      if(match)selCategoria(match);
-    },700);
-  }
+  showToast('Los turnos online están temporalmente deshabilitados. Llamanos al 2494 623097');
+  return;
+}
 
   // bk.profesionalId: undefined=no elegido, null=sin preferencia, number=id elegido
   let bk={srv:null,servicioId:null,duracion:60,profesionalId:undefined,profesionalNombre:null,date:null,time:null,pendienteId:null};
