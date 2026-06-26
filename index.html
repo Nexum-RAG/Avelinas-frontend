@@ -711,7 +711,7 @@
     try{
       const r=await fetch(`${API}/api/dias-bloqueados`);
       const d=await r.json();
-      DIAS_BLOQUEADOS_PUB=d||[];
+      DIAS_BLOQUEADOS_PUB=Array.isArray(d)?d:[];
     }catch(e){ DIAS_BLOQUEADOS_PUB=[]; }
   }
 
