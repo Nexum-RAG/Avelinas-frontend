@@ -706,8 +706,16 @@
   let bk={srv:null,servicioId:null,duracion:60,profesionalId:undefined,profesionalNombre:null,date:null,time:null,pendienteId:null};
   let cy,cm;
   const now=new Date(); cy=now.getFullYear(); cm=now.getMonth();
+  let DIAS_BLOQUEADOS_PUB=[];
+  async function cargarDiasBloqueados(){
+    try{
+      const r=await fetch(`${API}/api/dias-bloqueados`);
+      const d=await r.json();
+      DIAS_BLOQUEADOS_PUB=d||[];
+    }catch(e){ DIAS_BLOQUEADOS_PUB=[]; }
+  }
 
-  document.addEventListener('DOMContentLoaded',()=>{cargarServicios();cargarProfesionales();});
+  document.addEventListener('DOMContentLoaded',()=>{cargarServicios();cargarProfesionales();cargarDiasBloqueados();});
 
   function goStep(n){
     if(n===2&&!bk.servicioId){showToast('Elegí un servicio específico primero');return;}
@@ -738,7 +746,9 @@
       const el=document.createElement('div');el.className='cal-d';el.textContent=d;
       const td=new Date(cy,cm,d);
       const t0=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1);
-      if(td<t0||td.getDay()===0){el.classList.add('dis');}
+      const fechaISOd=`${cy}-${String(cm+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const estaBloqueado=DIAS_BLOQUEADOS_PUB.includes(fechaISOd);
+      if(td<t0||td.getDay()===0||estaBloqueado){el.classList.add('dis');}
       else{
         el.classList.add('avail');
         const ds=`${d} de ${mn[cm]}`;
