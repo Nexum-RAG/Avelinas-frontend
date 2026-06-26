@@ -439,7 +439,7 @@
         <label class="sr-only" for="bTel">Teléfono o WhatsApp</label>
         <input class="bw-inp" type="tel" placeholder="Tu teléfono / WhatsApp (ej: 2494 123456)" id="bTel"/>
         <label class="sr-only" for="bDni">DNI</label>
-        <input class="bw-inp" type="text" placeholder="DNI" id="bDni"/>
+        <input class="bw-inp" type="text" placeholder="DNI *" id="bDni" required/>
         <label class="sr-only" for="bNota">Aclaraciones o consultas</label>
         <textarea class="bw-inp bw-textarea" placeholder="Aclaraciones o consultas (opcional)" id="bNota" rows="3"></textarea>
         <label class="sr-only" for="bCumple">Fecha de cumpleaños</label>
@@ -822,13 +822,31 @@
     document.getElementById('cTime').textContent=bk.time||'—';
   }
 
+  function normalizarTelefono(raw){
+    let t=raw.replace(/\D/g,''); // solo dígitos
+    if(t.startsWith('0')) t=t.slice(1); // sacar 0 inicial si pusieron código de área con 0
+    if(t.length===10){ // ej: 2494011049 (10 dígitos, sin 54 ni 9)
+      t='549'+t;
+    }else if(t.length===11 && t.startsWith('9')){ // ej: 92494011049
+      t='54'+t;
+    }else if(t.length===12 && t.startsWith('54') && !t.startsWith('549')){ // ej: 542494011049 (le falta el 9)
+      t='549'+t.slice(2);
+    }else if(t.length===13 && t.startsWith('549')){ // ya correcto
+      // ok
+    }
+    return t;
+  }
+
   async function confirmB(){
     const name=document.getElementById('bName').value.trim();
-    const tel=document.getElementById('bTel').value.trim();
-    const dni=document.getElementById('bDni').value.trim();
+    const telRaw=document.getElementById('bTel').value.trim();
+    const dni=document.getElementById('bDni').value.trim().replace(/\D/g,'');
     const nota=document.getElementById('bNota').value.trim();
     if(!name){showToast('Ingresá tu nombre completo');return;}
-    if(!tel){showToast('Ingresá tu número de WhatsApp');return;}
+    if(!telRaw){showToast('Ingresá tu número de WhatsApp');return;}
+    if(!dni||dni.length<7){showToast('Ingresá tu DNI (sin puntos)');return;}
+    const tel=normalizarTelefono(telRaw);
+    if(tel.length<12){showToast('Revisá tu número de teléfono, parece incompleto');return;}
     const profTexto=bk.profesionalNombre&&bk.profesionalNombre!=='Sin preferencia'?bk.profesionalNombre:'Sin preferencia';
     const lines=['🌿 *Nueva reserva — Avelinas*','',`📋 *Servicio:* ${bk.srv}`,`👩 *Profesional:* ${profTexto}`,`📅 *Fecha:* ${bk.date}`,`🕐 *Horario:* ${bk.time}`,`👤 *Nombre:* ${name}`,`📱 *Teléfono:* ${tel}`];
     if(dni)lines.push(`🪪 *DNI:* ${dni}`);
