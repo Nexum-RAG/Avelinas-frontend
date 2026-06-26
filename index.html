@@ -698,9 +698,9 @@
   }
 
   function scrollToBooking(cat){
-  showToast('Los turnos online están temporalmente deshabilitados. Llamanos al 2494 623097');
-  return;
-}
+    document.getElementById('turnos').scrollIntoView({behavior:'smooth'});
+    setTimeout(()=>{ if(cat) selCategoria(cat); }, 400);
+  }
 
   // bk.profesionalId: undefined=no elegido, null=sin preferencia, number=id elegido
   let bk={srv:null,servicioId:null,duracion:60,profesionalId:undefined,profesionalNombre:null,date:null,time:null,pendienteId:null};
