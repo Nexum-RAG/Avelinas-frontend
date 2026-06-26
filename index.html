@@ -762,12 +762,25 @@
     const year=new Date().getFullYear();
     const fechaISO=`${year}-${mes}-${day}`;
     let disponibles=[];
+    let profIds=[];
+    let sets=[];
     try{
-      let url=`${API}/api/disponibilidad?fecha=${fechaISO}`;
-      if(bk.profesionalId) url+=`&profesional_id=${bk.profesionalId}`;
-      const r=await fetch(url);
-      const d=await r.json();
-      disponibles=d.disponibles||[];
+      if(bk.profesionalId){
+        profIds=[bk.profesionalId];
+      }else{
+        // Sin preferencia: buscar entre todas las que hacen este servicio
+        const rp=await fetch(`${API}/api/profesionales?servicio_id=${bk.servicioId}`);
+        const profsServicio=rp.ok?await rp.json():[];
+        profIds=profsServicio.map(p=>p.id);
+      }
+      const sets=await Promise.all(profIds.map(async pid=>{
+        const r=await fetch(`${API}/api/disponibilidad/horarios-libres?fecha=${fechaISO}&profesional_id=${pid}&duracion_min=${bk.duracion||60}`);
+        const d=await r.json();
+        return d.horarios_libres||[];
+      }));
+      const union=new Set();
+      sets.forEach(arr=>arr.forEach(h=>union.add(h)));
+      disponibles=Array.from(union).sort();
     }catch(e){
       disponibles=['09:00','09:30','10:00','10:30','11:00','11:30','14:00','14:30','15:00','15:30','16:00','17:00'];
     }
@@ -782,9 +795,15 @@
         document.querySelectorAll('.tb').forEach(b=>b.classList.remove('sel'));
         el.classList.add('sel');
         try{
+          let profIdParaCrear=bk.profesionalId||null;
+          if(!bk.profesionalId){
+            // Sin preferencia: usar la primera profesional que tenga ese horario libre
+            const idx=sets.findIndex(arr=>arr.includes(t));
+            if(idx>=0) profIdParaCrear=profIds[idx];
+          }
           const r=await fetch(API+'/api/pendientes',{
             method:'POST',headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({fecha:fechaISO,hora_inicio:t,servicio_id:bk.servicioId,servicio_nombre:bk.srv,duracion_min:bk.duracion,profesional_id:bk.profesionalId||null,profesional_nombre:bk.profesionalNombre!=='Sin preferencia'?bk.profesionalNombre:null,nombre:'Web'})
+            body:JSON.stringify({fecha:fechaISO,hora_inicio:t,servicio_id:bk.servicioId,servicio_nombre:bk.srv,duracion_min:bk.duracion,profesional_id:profIdParaCrear,profesional_nombre:bk.profesionalNombre!=='Sin preferencia'?bk.profesionalNombre:null,nombre:'Web'})
           });
           const d=await r.json();
           if(r.status===409){showToast('Ese horario ya no está disponible, elegí otro');bk.time=null;el.classList.remove('sel');}
