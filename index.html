@@ -773,7 +773,7 @@
         const profsServicio=rp.ok?await rp.json():[];
         profIds=profsServicio.map(p=>p.id);
       }
-      const sets=await Promise.all(profIds.map(async pid=>{
+      sets=await Promise.all(profIds.map(async pid=>{
         const r=await fetch(`${API}/api/disponibilidad/horarios-libres?fecha=${fechaISO}&profesional_id=${pid}&duracion_min=${bk.duracion||60}`);
         const d=await r.json();
         return d.horarios_libres||[];
@@ -807,7 +807,7 @@
           });
           const d=await r.json();
           if(r.status===409){showToast('Ese horario ya no está disponible, elegí otro');bk.time=null;el.classList.remove('sel');}
-          else if(!r.ok)console.warn('Backend error:',r.status,d);
+          else if(!r.ok){console.warn('Backend error:',r.status,d);showToast('No se pudo reservar el horario, intentá de nuevo');bk.time=null;el.classList.remove('sel');}
           else bk.pendienteId=d.id;
         }catch(e){console.warn('No se pudo conectar:',e);}
       };
