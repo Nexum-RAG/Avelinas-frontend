@@ -602,6 +602,22 @@
   window.addEventListener('load',()=>{setTimeout(()=>{document.querySelectorAll('.reveal').forEach(r=>{const rect=r.getBoundingClientRect();if(rect.top<window.innerHeight+50&&rect.bottom>0)r.classList.add('vis');});},80);});
 
   function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+  function handleMPReturn(){
+    const p=new URLSearchParams(window.location.search);
+    const cs=p.get('collection_status'),pid=p.get('payment_id'),st=p.get('status');
+    if(!cs&&!pid&&!st)return;
+    fetch(API+'/api/pagos/retorno',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({collection_status:cs,payment_id:pid,status:st,
+        external_reference:p.get('external_reference'),merchant_order_id:p.get('merchant_order_id')}),
+    }).catch(()=>{});
+    let msg;
+    if(cs==='approved')msg='¡Pago recibido! En breve te llega la confirmación por WhatsApp.';
+    else if(cs==='rejected'||cs==='failure')msg='El pago no se completó. Podés intentarlo de nuevo seleccionando tu turno.';
+    else if(cs==='pending')msg='Tu pago está siendo procesado. Te avisamos por WhatsApp cuando se confirme.';
+    else msg='Procesando tu reserva…';
+    setTimeout(()=>showToast(msg),400);
+  }
   let cart=0;
   function addCart(){cart++;document.getElementById('cartCount').textContent=cart;showToast('Producto agregado al carrito');}
 
@@ -703,13 +719,13 @@
   }
 
   // bk.profesionalId: undefined=no elegido, null=sin preferencia, number=id elegido
-  let bk={srv:null,servicioId:null,duracion:60,profesionalId:undefined,profesionalNombre:null,date:null,time:null,pendienteId:null};
+  let bk={srv:null,servicioId:null,duracion:60,profesionalId:undefined,profesionalNombre:null,date:null,time:null,pendienteId:null,pendienteHora:null,pendienteFecha:null,pendienteProfId:undefined};
   let cy,cm;
   const now=new Date(); cy=now.getFullYear(); cm=now.getMonth();
 
   document.addEventListener('DOMContentLoaded',()=>{cargarServicios();cargarProfesionales();});
 
-  document.addEventListener('DOMContentLoaded',()=>{cargarServicios();cargarProfesionales();cargarDiasBloqueados();});
+  document.addEventListener('DOMContentLoaded',()=>{cargarServicios();cargarProfesionales();cargarDiasBloqueados();handleMPReturn();});
 
   function goStep(n){
     if(n===2&&!bk.servicioId){showToast('Elegí un servicio específico primero');return;}
@@ -801,6 +817,11 @@
             const idx=sets.findIndex(arr=>arr.includes(t));
             if(idx>=0) profIdParaCrear=profIds[idx];
           }
+          // Reutilizar pendiente existente si fecha, horario y profesional no cambiaron
+          if(bk.pendienteId && fechaISO===bk.pendienteFecha && t===bk.pendienteHora && profIdParaCrear===bk.pendienteProfId){
+            goStep(5);
+            return;
+          }
           const r=await fetch(API+'/api/pendientes',{
             method:'POST',headers:{'Content-Type':'application/json'},
             body:JSON.stringify({fecha:fechaISO,hora_inicio:t,servicio_id:bk.servicioId,servicio_nombre:bk.srv,duracion_min:bk.duracion,profesional_id:profIdParaCrear,profesional_nombre:bk.profesionalNombre!=='Sin preferencia'?bk.profesionalNombre:null,nombre:'Web'})
@@ -808,7 +829,7 @@
           const d=await r.json();
           if(r.status===409){showToast('Ese horario ya no está disponible, elegí otro');bk.time=null;el.classList.remove('sel');}
           else if(!r.ok){console.warn('Backend error:',r.status,d);showToast('No se pudo reservar el horario, intentá de nuevo');bk.time=null;el.classList.remove('sel');}
-          else bk.pendienteId=d.id;
+          else{bk.pendienteId=d.id;bk.pendienteHora=t;bk.pendienteFecha=fechaISO;bk.pendienteProfId=profIdParaCrear;}
         }catch(e){console.warn('No se pudo conectar:',e);}
       };
       g.appendChild(el);
