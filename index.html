@@ -824,7 +824,7 @@
           }
           const r=await fetch(API+'/api/pendientes',{
             method:'POST',headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({fecha:fechaISO,hora_inicio:t,servicio_id:bk.servicioId,servicio_nombre:bk.srv,duracion_min:bk.duracion,profesional_id:profIdParaCrear,profesional_nombre:bk.profesionalNombre!=='Sin preferencia'?bk.profesionalNombre:null,nombre:'Web'})
+            body:JSON.stringify({fecha:fechaISO,hora_inicio:t,servicio_id:bk.servicioId,servicio_nombre:bk.srv,duracion_min:bk.duracion,profesional_id:profIdParaCrear,profesional_nombre:bk.profesionalNombre!=='Sin preferencia'?bk.profesionalNombre:null,nombre:'Web',sin_preferencia:!bk.profesionalId})
           });
           const d=await r.json();
           if(r.status===409){showToast('Ese horario ya no está disponible, elegí otro');bk.time=null;el.classList.remove('sel');}
