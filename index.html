@@ -301,6 +301,7 @@
   <ul class="nav-links">
     <li><a href="#servicios">Servicios</a></li>
     <li><a href="#turnos">Turnos</a></li>
+    <li><a href="#mis-turnos">Mis turnos</a></li>
     <li><a href="#tienda">Tienda</a></li>
     <li><a href="#club">Club</a></li>
     <li><a href="#nosotras">Nosotras</a></li>
@@ -445,6 +446,24 @@
         <label class="sr-only" for="bCumple">Fecha de cumpleaños</label>
         <input class="bw-inp" type="text" placeholder="Fecha de cumpleaños, ej: 15/03 (opcional)" id="bCumple" maxlength="5"/>
         <div class="bw-nav"><button class="bw-back" onclick="goStep(4)">← Atrás</button><button class="bw-next" onclick="confirmB()">Abonar seña 💳</button></div>
+     </div>
+    </div>
+  </div>
+</section>
+
+<section id="mis-turnos">
+  <div class="reveal"><div class="sec-label">Autoservicio</div><h2 class="sec-title">Mis <em>turnos</em></h2></div>
+  <div style="max-width:520px;margin:56px auto 0;">
+    <div class="club-card reveal">
+      <div class="club-body" style="padding:38px;">
+        <p style="font-size:.9rem;color:var(--ink-soft);line-height:1.7;margin-bottom:22px;">Ingresá tu DNI para ver tus turnos reservados.</p>
+        <div id="turnosSearchRow" style="display:flex;gap:8px;margin-bottom:10px;">
+          <input type="text" id="turnosDni" placeholder="Tu DNI (sin puntos)" inputmode="numeric" maxlength="8" style="flex:1;padding:12px 16px;border-radius:50px;border:1px solid rgba(90,99,72,.25);background:var(--cream);font-family:var(--sans);font-size:.85rem;color:var(--ink);"/>
+          <button type="button" id="btnConsultarTurnos" class="btn-solid" style="white-space:nowrap;">Consultar</button>
+        </div>
+        <div id="turnosMsg" style="font-size:.78rem;color:var(--ink-soft);margin-bottom:14px;min-height:1em;"></div>
+        <div id="turnosLista" style="display:none;"></div>
+        <button type="button" id="btnOtroDniTurnos" style="display:none;margin-top:14px;background:transparent;border:1px solid rgba(90,99,72,.35);color:var(--olive);padding:7px 16px;border-radius:50px;font-size:.72rem;cursor:pointer;">Consultar otro DNI</button>
       </div>
     </div>
   </div>
@@ -611,6 +630,9 @@
   document.getElementById('btnConsultarSellos').addEventListener('click',consultarSellos);
   document.getElementById('clubDni').addEventListener('keydown',e=>{if(e.key==='Enter')consultarSellos();});
   document.getElementById('btnOtroDni').addEventListener('click',resetConsultaSellos);
+  document.getElementById('btnConsultarTurnos').addEventListener('click',consultarMisTurnos);
+  document.getElementById('turnosDni').addEventListener('keydown',e=>{if(e.key==='Enter')consultarMisTurnos();});
+  document.getElementById('btnOtroDniTurnos').addEventListener('click',resetConsultaTurnos);
   document.querySelectorAll('.nav-links a').forEach(a=>a.addEventListener('click',()=>document.querySelector('.nav-links').classList.remove('open')));
   const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){setTimeout(()=>e.target.classList.add('vis'),60);}});},{threshold:0});
   document.querySelectorAll('.reveal').forEach(r=>io.observe(r));
