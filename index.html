@@ -483,9 +483,16 @@
     </div>
     <div class="club-info reveal">
       <p>Pedí tu tarjeta en caja y empezá a disfrutar beneficios exclusivos. Al completar 10 sellos, elegís tu premio.</p>
-      <div class="stamp-box">
+      <div class="sellos-lookup">
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <input type="text" id="clubDni" placeholder="Tu DNI (sin puntos)" inputmode="numeric" maxlength="8" style="flex:1;padding:12px 16px;border-radius:50px;border:1px solid rgba(90,99,72,.25);background:var(--white);font-family:var(--sans);font-size:.85rem;color:var(--ink);"/>
+          <button type="button" id="btnConsultarSellos" class="btn-solid" style="white-space:nowrap;">Consultar sellos</button>
+        </div>
+        <div id="sellosMsg" style="font-size:.78rem;color:var(--ink-soft);margin-bottom:14px;min-height:1em;"></div>
+      </div>
+      <div class="stamp-box" id="stampBox">
         <div class="stamp-lbl">Así va tu tarjeta</div>
-        <div class="stamps">
+        <div class="stamps" id="stampsRow">
           <div class="stamp on"><svg viewBox="0 0 14 14"><path d="M7 2C5 4 5 9 7 12 9 9 9 4 7 2z" stroke-linecap="round"/></svg></div>
           <div class="stamp on"><svg viewBox="0 0 14 14"><path d="M7 2C5 4 5 9 7 12 9 9 9 4 7 2z" stroke-linecap="round"/></svg></div>
           <div class="stamp on"><svg viewBox="0 0 14 14"><path d="M7 2C5 4 5 9 7 12 9 9 9 4 7 2z" stroke-linecap="round"/></svg></div>
@@ -497,7 +504,7 @@
           <div class="stamp"><svg viewBox="0 0 14 14"><path d="M7 2C5 4 5 9 7 12 9 9 9 4 7 2z"/></svg></div>
           <div class="stamp"><svg viewBox="0 0 14 14"><path d="M7 2C5 4 5 9 7 12 9 9 9 4 7 2z"/></svg></div>
         </div>
-        <div class="stamp-pg">6 de 10 sellos</div>
+        <div class="stamp-pg" id="stampPg">6 de 10 sellos</div>
       </div>
       <div style="font-size:.8rem;color:var(--ink-soft);margin-bottom:12px;">Al completar los 10 sellos, elegís uno de estos premios:</div>
       <div class="prizes">
@@ -596,6 +603,8 @@
 <script>
   window.addEventListener('scroll',()=>{document.getElementById('nav').classList.toggle('scrolled',scrollY>40);});
   document.getElementById('hamburger').addEventListener('click',()=>{document.querySelector('.nav-links').classList.toggle('open');});
+  document.getElementById('btnConsultarSellos').addEventListener('click',consultarSellos);
+  document.getElementById('clubDni').addEventListener('keydown',e=>{if(e.key==='Enter')consultarSellos();});
   document.querySelectorAll('.nav-links a').forEach(a=>a.addEventListener('click',()=>document.querySelector('.nav-links').classList.remove('open')));
   const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){setTimeout(()=>e.target.classList.add('vis'),60);}});},{threshold:0});
   document.querySelectorAll('.reveal').forEach(r=>io.observe(r));
@@ -622,6 +631,36 @@
   function addCart(){cart++;document.getElementById('cartCount').textContent=cart;showToast('Producto agregado al carrito');}
 
   const API='https://porto-estudio-avelinas-api.67iz4w.easypanel.host';
+
+  function renderStamps(sellos){
+    const row=document.getElementById('stampsRow');
+    if(!row) return;
+    const enEsteCiclo=sellos%10;
+    let html='';
+    for(let i=0;i<10;i++){
+      html+=`<div class="stamp${i<enEsteCiclo?' on':''}"><svg viewBox="0 0 14 14"><path d="M7 2C5 4 5 9 7 12 9 9 9 4 7 2z"${i<enEsteCiclo?' stroke-linecap="round"':''}/></svg></div>`;
+    }
+    row.innerHTML=html;
+  }
+
+  async function consultarSellos(){
+    const dniInput=document.getElementById('clubDni');
+    const msg=document.getElementById('sellosMsg');
+    const dni=(dniInput.value||'').replace(/\D/g,'');
+    if(dni.length<7||dni.length>8){msg.textContent='Ingresá un DNI válido (sin puntos).';msg.style.color='#a35a5a';return;}
+    msg.textContent='Buscando...';msg.style.color='var(--ink-soft)';
+    try{
+      const r=await fetch(`${API}/api/clientes/club/sellos?dni=${dni}`);
+      const d=await r.json();
+      if(!r.ok){msg.textContent=d.error||'No pudimos encontrar tu tarjeta.';msg.style.color='#a35a5a';return;}
+      renderStamps(d.sellos);
+      const pg=document.getElementById('stampPg');
+      if(pg) pg.textContent=d.premio_listo?'¡Ya tenés un premio listo para canjear! 🎉':`Te faltan ${d.faltan_para_proximo_premio} sellos para tu próximo premio`;
+      msg.textContent=`Tenés ${d.sellos} sellos acumulados en total.`;msg.style.color='var(--olive)';
+    }catch(e){
+      msg.textContent='Hubo un error, intentá de nuevo en un momento.';msg.style.color='#a35a5a';
+    }
+  }
   const SRVS_FALLBACK=[
     {id:1,nombre:'Corte',categoria:'Peluquería',precio:1000,duracion:60},
     {id:2,nombre:'Coloración',categoria:'Peluquería',precio:14000,duracion:120},
