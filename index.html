@@ -660,6 +660,59 @@
 
   const API='https://porto-estudio-avelinas-api.67iz4w.easypanel.host';
 
+  function renderTurnos(turnos){
+    const cont=document.getElementById('turnosLista');
+    if(!turnos.length){
+      cont.innerHTML='<div style="font-size:.85rem;color:var(--ink-soft);padding:14px 0;">No encontramos turnos para ese DNI.</div>';
+    } else {
+      const ESTADOS={confirmado:'Confirmado',pendiente:'Pendiente',completado:'Completado',cancelado_cliente:'Cancelado',cancelado_local:'Cancelado'};
+      cont.innerHTML=turnos.map(t=>{
+        const fecha=new Date(t.fecha+'T00:00:00').toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'});
+        const hora=(t.hora_inicio||'').slice(0,5);
+        const estadoTxt=ESTADOS[t.estado]||t.estado;
+        return `<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(90,99,72,.12);">
+          <div>
+            <div style="font-size:.88rem;color:var(--ink);font-weight:500;">${t.servicio_nombre||'Servicio'}</div>
+            <div style="font-size:.78rem;color:var(--ink-soft);">${fecha}${hora?' · '+hora:''}</div>
+          </div>
+          <div style="font-size:.72rem;padding:4px 10px;border-radius:50px;background:var(--cream-dark);color:var(--ink-mid);white-space:nowrap;">${estadoTxt}</div>
+        </div>`;
+      }).join('');
+    }
+    cont.style.display='block';
+  }
+
+  function resetConsultaTurnos(){
+    const lista=document.getElementById('turnosLista');
+    lista.style.display='none';
+    lista.innerHTML='';
+    document.getElementById('btnOtroDniTurnos').style.display='none';
+    document.getElementById('turnosSearchRow').style.display='flex';
+    document.getElementById('turnosMsg').textContent='';
+    const dniInput=document.getElementById('turnosDni');
+    dniInput.value='';
+    dniInput.focus();
+  }
+
+  async function consultarMisTurnos(){
+    const dniInput=document.getElementById('turnosDni');
+    const msg=document.getElementById('turnosMsg');
+    const dni=(dniInput.value||'').replace(/\D/g,'');
+    if(dni.length<7||dni.length>8){msg.textContent='Ingresá un DNI válido (sin puntos).';msg.style.color='#a35a5a';return;}
+    msg.textContent='Buscando...';msg.style.color='var(--ink-soft)';
+    try{
+      const r=await fetch(`${API}/api/turnos/publico?dni=${dni}`);
+      const d=await r.json();
+      if(!r.ok){msg.textContent=d.error||'Hubo un error, intentá de nuevo.';msg.style.color='#a35a5a';return;}
+      document.getElementById('turnosSearchRow').style.display='none';
+      msg.textContent='';
+      renderTurnos(d);
+      document.getElementById('btnOtroDniTurnos').style.display='inline-block';
+    }catch(e){
+      msg.textContent='Hubo un error, intentá de nuevo en un momento.';msg.style.color='#a35a5a';
+    }
+  }
+
   function renderStamps(sellos){
     const row=document.getElementById('stampsRow');
     if(!row) return;
