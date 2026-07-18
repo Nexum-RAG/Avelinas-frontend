@@ -483,15 +483,20 @@
     </div>
     <div class="club-info reveal">
       <p>Pedí tu tarjeta en caja y empezá a disfrutar beneficios exclusivos. Al completar 10 sellos, elegís tu premio.</p>
-      <div class="sellos-lookup">
-        <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <div class="sellos-lookup" id="sellosLookup">
+        <div id="sellosSearchRow" style="display:flex;gap:8px;margin-bottom:10px;">
           <input type="text" id="clubDni" placeholder="Tu DNI (sin puntos)" inputmode="numeric" maxlength="8" style="flex:1;padding:12px 16px;border-radius:50px;border:1px solid rgba(90,99,72,.25);background:var(--white);font-family:var(--sans);font-size:.85rem;color:var(--ink);"/>
           <button type="button" id="btnConsultarSellos" class="btn-solid" style="white-space:nowrap;">Consultar sellos</button>
         </div>
         <div id="sellosMsg" style="font-size:.78rem;color:var(--ink-soft);margin-bottom:14px;min-height:1em;"></div>
+        <div id="sellosResultado" style="display:none;background:var(--olive);color:var(--white);border-radius:16px;padding:22px 26px;margin-bottom:18px;">
+          <div id="sellosResultadoNum" style="font-family:var(--serif);font-size:2.3rem;font-weight:600;line-height:1;"></div>
+          <div id="sellosResultadoSub" style="font-size:.85rem;opacity:.85;margin-top:6px;"></div>
+          <button type="button" id="btnOtroDni" style="margin-top:14px;background:transparent;border:1px solid rgba(255,255,255,.5);color:var(--white);padding:7px 16px;border-radius:50px;font-size:.72rem;cursor:pointer;">Consultar otro DNI</button>
+        </div>
       </div>
       <div class="stamp-box" id="stampBox">
-        <div class="stamp-lbl">Así va tu tarjeta</div>
+        <div class="stamp-lbl" id="stampLbl">Ejemplo de tarjeta (no es la tuya)</div>
         <div class="stamps" id="stampsRow">
           <div class="stamp on"><svg viewBox="0 0 14 14"><path d="M7 2C5 4 5 9 7 12 9 9 9 4 7 2z" stroke-linecap="round"/></svg></div>
           <div class="stamp on"><svg viewBox="0 0 14 14"><path d="M7 2C5 4 5 9 7 12 9 9 9 4 7 2z" stroke-linecap="round"/></svg></div>
@@ -605,6 +610,7 @@
   document.getElementById('hamburger').addEventListener('click',()=>{document.querySelector('.nav-links').classList.toggle('open');});
   document.getElementById('btnConsultarSellos').addEventListener('click',consultarSellos);
   document.getElementById('clubDni').addEventListener('keydown',e=>{if(e.key==='Enter')consultarSellos();});
+  document.getElementById('btnOtroDni').addEventListener('click',resetConsultaSellos);
   document.querySelectorAll('.nav-links a').forEach(a=>a.addEventListener('click',()=>document.querySelector('.nav-links').classList.remove('open')));
   const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){setTimeout(()=>e.target.classList.add('vis'),60);}});},{threshold:0});
   document.querySelectorAll('.reveal').forEach(r=>io.observe(r));
@@ -643,6 +649,36 @@
     row.innerHTML=html;
   }
 
+  function mostrarResultadoSellos(d){
+    document.getElementById('sellosSearchRow').style.display='none';
+    document.getElementById('sellosMsg').textContent='';
+    const res=document.getElementById('sellosResultado');
+    res.style.display='block';
+    document.getElementById('sellosResultadoNum').textContent=`${d.sellos} sellos`;
+    document.getElementById('sellosResultadoSub').textContent=d.premio_listo
+      ? '¡Ya tenés un premio listo para canjear! 🎉'
+      : `Te faltan ${d.faltan_para_proximo_premio} sellos para tu próximo premio`;
+    renderStamps(d.sellos);
+    const lbl=document.getElementById('stampLbl');
+    if(lbl) lbl.textContent='Tu tarjeta';
+    const pg=document.getElementById('stampPg');
+    if(pg) pg.textContent=d.premio_listo?'¡Premio listo!':`${d.sellos%10} de 10 sellos`;
+  }
+
+  function resetConsultaSellos(){
+    document.getElementById('sellosResultado').style.display='none';
+    document.getElementById('sellosSearchRow').style.display='flex';
+    document.getElementById('sellosMsg').textContent='';
+    const dniInput=document.getElementById('clubDni');
+    dniInput.value='';
+    dniInput.focus();
+    const lbl=document.getElementById('stampLbl');
+    if(lbl) lbl.textContent='Ejemplo de tarjeta (no es la tuya)';
+    renderStamps(6);
+    const pg=document.getElementById('stampPg');
+    if(pg) pg.textContent='6 de 10 sellos';
+  }
+
   async function consultarSellos(){
     const dniInput=document.getElementById('clubDni');
     const msg=document.getElementById('sellosMsg');
@@ -653,10 +689,7 @@
       const r=await fetch(`${API}/api/clientes/club/sellos?dni=${dni}`);
       const d=await r.json();
       if(!r.ok){msg.textContent=d.error||'No pudimos encontrar tu tarjeta.';msg.style.color='#a35a5a';return;}
-      renderStamps(d.sellos);
-      const pg=document.getElementById('stampPg');
-      if(pg) pg.textContent=d.premio_listo?'¡Ya tenés un premio listo para canjear! 🎉':`Te faltan ${d.faltan_para_proximo_premio} sellos para tu próximo premio`;
-      msg.textContent=`Tenés ${d.sellos} sellos acumulados en total.`;msg.style.color='var(--olive)';
+      mostrarResultadoSellos(d);
     }catch(e){
       msg.textContent='Hubo un error, intentá de nuevo en un momento.';msg.style.color='#a35a5a';
     }
