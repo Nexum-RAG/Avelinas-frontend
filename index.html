@@ -658,11 +658,7 @@
     document.getElementById('sellosResultadoSub').textContent=d.premio_listo
       ? '¡Ya tenés un premio listo para canjear! 🎉'
       : `Te faltan ${d.faltan_para_proximo_premio} sellos para tu próximo premio`;
-    renderStamps(d.sellos);
-    const lbl=document.getElementById('stampLbl');
-    if(lbl) lbl.textContent='Tu tarjeta';
-    const pg=document.getElementById('stampPg');
-    if(pg) pg.textContent=d.premio_listo?'¡Premio listo!':`${d.sellos%10} de 10 sellos`;
+    // La tarjeta gráfica de abajo queda siempre como ejemplo — no se pisa con datos reales
   }
 
   function resetConsultaSellos(){
@@ -672,8 +668,6 @@
     const dniInput=document.getElementById('clubDni');
     dniInput.value='';
     dniInput.focus();
-    const lbl=document.getElementById('stampLbl');
-    if(lbl) lbl.textContent='Ejemplo de tarjeta (no es la tuya)';
     renderStamps(6);
     const pg=document.getElementById('stampPg');
     if(pg) pg.textContent='6 de 10 sellos';
