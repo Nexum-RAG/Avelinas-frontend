@@ -864,6 +864,16 @@
   let bk={srv:null,servicioId:null,duracion:60,profesionalId:undefined,profesionalNombre:null,date:null,time:null,pendienteId:null,pendienteHora:null,pendienteFecha:null,pendienteProfId:undefined};
   let cy,cm;
   const now=new Date(); cy=now.getFullYear(); cm=now.getMonth();
+  let DIAS_BLOQUEADOS=[];
+  let diasBloqueadosCargados=false;
+  async function cargarDiasBloqueados(){
+    if(diasBloqueadosCargados) return;
+    try{
+      const r=await fetch(`${API}/api/dias-bloqueados`);
+      if(r.ok) DIAS_BLOQUEADOS=await r.json();
+      diasBloqueadosCargados=true;
+    }catch(e){/* si falla, el calendario sigue funcionando sin marcar días bloqueados */}
+  }
 
   document.addEventListener('DOMContentLoaded',()=>{cargarServicios();cargarProfesionales();});
 
@@ -878,7 +888,7 @@
     for(let i=1;i<=5;i++) document.getElementById('st'+i).classList.toggle('active',i===n);
     document.getElementById('p'+n).classList.add('active');
     if(n===2)renderProfesionales();
-    if(n===3)renderCal();
+    if(n===3)cargarDiasBloqueados().then(renderCal);
     if(n===4)renderTimes();
     if(n===5)renderConfirm();
   }
@@ -898,7 +908,8 @@
       const el=document.createElement('div');el.className='cal-d';el.textContent=d;
       const td=new Date(cy,cm,d);
       const t0=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1);
-      if(td<t0||td.getDay()===0){el.classList.add('dis');}
+      const iso=cy+'-'+String(cm+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+      if(td<t0||td.getDay()===0||DIAS_BLOQUEADOS.includes(iso)){el.classList.add('dis');}
       else{
         el.classList.add('avail');
         const ds=`${d} de ${mn[cm]}`;
