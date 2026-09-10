@@ -857,6 +857,8 @@
   let bk={srv:null,servicioId:null,duracion:60,profesionalId:undefined,profesionalNombre:null,date:null,time:null,pendienteId:null,pendienteHora:null,pendienteFecha:null,pendienteProfId:undefined};
   let cy,cm;
   const now=new Date(); cy=now.getFullYear(); cm=now.getMonth();
+  const MAX_DIAS_ADELANTE=40;
+  const maxFecha=new Date(now.getFullYear(),now.getMonth(),now.getDate()+MAX_DIAS_ADELANTE);
   let DIAS_BLOQUEADOS=[];
   let diasBloqueadosCargados=false;
   async function cargarDiasBloqueados(){
@@ -886,7 +888,14 @@
     if(n===5)renderConfirm();
   }
 
-  function chMonth(d){cm+=d;if(cm>11){cm=0;cy++;}if(cm<0){cm=11;cy--;}renderCal();}
+  function chMonth(d){
+    const nuevoCm=cm+d, nuevoCy=nuevoCm>11?cy+1:(nuevoCm<0?cy-1:cy), cmAjustado=((nuevoCm%12)+12)%12;
+    if(d>0){
+      const primerDiaNuevoMes=new Date(nuevoCy,cmAjustado,1);
+      if(primerDiaNuevoMes>maxFecha) return;
+    }
+    cm+=d;if(cm>11){cm=0;cy++;}if(cm<0){cm=11;cy--;}renderCal();
+  }
 
   function renderCal(){
     const MN=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -902,7 +911,7 @@
       const td=new Date(cy,cm,d);
       const t0=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1);
       const iso=cy+'-'+String(cm+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-      if(td<t0||td.getDay()===0||DIAS_BLOQUEADOS.includes(iso)){el.classList.add('dis');}
+      if(td<t0||td>maxFecha||td.getDay()===0||DIAS_BLOQUEADOS.includes(iso)){el.classList.add('dis');}
       else{
         el.classList.add('avail');
         const ds=`${d} de ${mn[cm]}`;
