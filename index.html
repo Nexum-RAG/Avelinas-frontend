@@ -984,7 +984,7 @@
           const d=await r.json();
           if(r.status===409){showToast('Ese horario ya no está disponible, elegí otro');bk.time=null;el.classList.remove('sel');}
           else if(!r.ok){console.warn('Backend error:',r.status,d);showToast('No se pudo reservar el horario, intentá de nuevo');bk.time=null;el.classList.remove('sel');}
-          else{bk.pendienteId=d.id;bk.pendienteHora=t;bk.pendienteFecha=fechaISO;bk.pendienteProfId=profIdParaCrear;}
+          else{bk.pendienteId=d.id;bk.pendienteToken=d.token;bk.pendienteHora=t;bk.pendienteFecha=fechaISO;bk.pendienteProfId=profIdParaCrear;}
         }catch(e){console.warn('No se pudo conectar:',e);}
       };
       g.appendChild(el);
@@ -1035,13 +1035,31 @@ if(cumple)lines.push(`🎂 *Cumpleaños:* ${cumple}`);
     if(bk.pendienteId){
       try{
         // Confirmar datos del pendiente primero
-        await fetch(API+'/api/pendientes/'+bk.pendienteId+'/confirmar',{
+        const confirmRes=await fetch(API+'/api/pendientes/'+bk.pendienteId+'/confirmar',{
           method:'POST',headers:{'Content-Type':'application/json'},
           body:JSON.stringify({nombre:name,telefono:tel,dni:dni||null,notas:nota||null,
   profesional_id:bk.profesionalId||null,
   profesional_nombre:profTexto!=='Sin preferencia'?profTexto:null,
-  cumpleanos:document.getElementById('bCumple')?.value?.trim()||null})
+  cumpleanos:document.getElementById('bCumple')?.value?.trim()||null,
+  token:bk.pendienteToken||null})
         });
+        if(!confirmRes.ok){
+          if(confirmRes.status>=500){
+            // Error real de servidor (DB caída un instante, etc.) — no es que
+            // el pendiente haya expirado. No tocar bk.*: sigue vivo, un
+            // reintento (tocar "Confirmar" de nuevo) puede alcanzar.
+            showToast('Hubo un problema confirmando tu reserva. Probá de nuevo en unos segundos.');
+            return;
+          }
+          // 404: la reserva expiró (pasó más de 1 hora) o el token no
+          // coincide — acá sí el pendiente ya no sirve, cortar antes de
+          // pedir el link de pago: si seguimos, la clienta paga y el turno
+          // queda sin nombre/teléfono/DNI reales.
+          showToast('Tu horario reservado expiró. Elegí un horario de nuevo para continuar.');
+          bk.pendienteId=null;bk.pendienteToken=null;bk.pendienteHora=null;bk.pendienteFecha=null;bk.pendienteProfId=undefined;
+          goStep(4);
+          return;
+        }
         // Generar link de pago
         const pagoRes=await fetch(API+'/api/pagos/crear',{
           method:'POST',headers:{'Content-Type':'application/json'},
