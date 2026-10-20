@@ -80,7 +80,7 @@
     .t-feats{display:flex;flex-direction:column;gap:14px;}
     .t-feat{display:flex;align-items:center;gap:12px;font-size:.84rem;color:var(--ink-mid);}
     .t-dot{width:7px;height:7px;border-radius:50%;background:var(--olive-light);flex-shrink:0;}
-    .bw{background:var(--white);border-radius:24px;padding:36px;box-shadow:0 4px 48px rgba(62,71,51,.08);}
+    .bw{background:var(--white);border-radius:24px;padding:36px;box-shadow:0 4px 48px rgba(62,71,51,.08);overflow-anchor:none;}
     .bw-logo{display:flex;align-items:center;gap:9px;margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--cream-mid);}
     .bw-logo svg{width:28px;height:32px;}
     .bw-logo span{font-family:var(--serif);font-size:1.2rem;font-weight:400;color:var(--olive);letter-spacing:.01em;}
@@ -122,11 +122,12 @@
     .cal-nav button:hover{border-color:var(--olive-mid);color:var(--olive);}
     .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;}
     .cal-hd{font-size:.66rem;text-align:center;color:var(--ink-soft);letter-spacing:.06em;padding:3px;}
-    .cal-d{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:.8rem;cursor:pointer;transition:all .2s;color:var(--ink-mid);}
+    .cal-d{height:40px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:.8rem;cursor:pointer;transition:all .2s;color:var(--ink-mid);}
     .cal-d.avail:hover{background:var(--olive-pale);color:var(--olive-deep);}
     .cal-d.sel{background:var(--olive);color:var(--white);}
     .cal-d.today{border:1.5px solid var(--olive-mid);color:var(--olive);font-weight:500;}
     .cal-d.dis{color:var(--cream-mid);cursor:default;pointer-events:none;}
+    .cal-d.cal-blank{visibility:hidden;pointer-events:none;}
     .tg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
     .tb{background:var(--cream);border:1.5px solid transparent;border-radius:8px;padding:10px;text-align:center;font-size:.8rem;cursor:pointer;transition:all .2s;color:var(--ink-mid);}
     .tb:hover{border-color:var(--olive-mid);}
@@ -258,6 +259,7 @@
       #contacto{padding:52px 18px 40px;}
       /* Booking widget */
       .bw{padding:22px 18px;border-radius:18px;}
+      .cal-d{height:36px;}
       .bw-logo{margin-bottom:18px;padding-bottom:16px;}
       .bw-steps{margin-bottom:20px;}
       .bw-step{font-size:.58rem;letter-spacing:.03em;padding-bottom:7px;}
@@ -900,12 +902,15 @@
   function renderCal(){
     const MN=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
     const mn=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-    document.getElementById('calTitle').textContent=MN[cm]+' '+cy;
-    const g=document.getElementById('calGrid');g.innerHTML='';
-    ['Do','Lu','Ma','Mi','Ju','Vi','Sa'].forEach(d=>{const h=document.createElement('div');h.className='cal-hd';h.textContent=d;g.appendChild(h);});
+    const g=document.getElementById('calGrid');
+    // Se arma todo en un fragment y se reemplaza de una vez (sin parpadeo ni
+    // saltos de altura): siempre 42 celdas = 6 filas, completando con días en blanco.
+    const frag=document.createDocumentFragment();
+    const blank=()=>{const b=document.createElement('div');b.className='cal-d cal-blank';return b;};
+    ['Do','Lu','Ma','Mi','Ju','Vi','Sa'].forEach(d=>{const h=document.createElement('div');h.className='cal-hd';h.textContent=d;frag.appendChild(h);});
     const fd=new Date(cy,cm,1).getDay();
     const dim=new Date(cy,cm+1,0).getDate();
-    for(let i=0;i<fd;i++)g.appendChild(document.createElement('div'));
+    for(let i=0;i<fd;i++)frag.appendChild(blank());
     for(let d=1;d<=dim;d++){
       const el=document.createElement('div');el.className='cal-d';el.textContent=d;
       const td=new Date(cy,cm,d);
@@ -919,8 +924,11 @@
         if(bk.date===ds)el.classList.add('sel');
         el.onclick=()=>{bk.date=ds;renderCal();};
       }
-      g.appendChild(el);
+      frag.appendChild(el);
     }
+    for(let i=fd+dim;i<42;i++)frag.appendChild(blank());
+    document.getElementById('calTitle').textContent=MN[cm]+' '+cy;
+    g.replaceChildren(frag);
   }
 
   async function renderTimes(){
@@ -945,7 +953,7 @@
         profIds=profsServicio.map(p=>p.id);
       }
       sets=await Promise.all(profIds.map(async pid=>{
-        const r=await fetch(`${API}/api/disponibilidad/horarios-libres?fecha=${fechaISO}&profesional_id=${pid}&duracion_min=${bk.duracion||60}`);
+        const r=await fetch(`${API}/api/disponibilidad/horarios-libres?fecha=${fechaISO}&profesional_id=${pid}&duracion_min=${bk.duracion||60}&excluir_pendiente_id=${bk.pendienteId||''}`);
         const d=await r.json();
         return d.horarios_libres||[];
       }));
@@ -973,7 +981,7 @@
             if(idx>=0) profIdParaCrear=profIds[idx];
           }
           // Reutilizar pendiente existente si fecha, horario y profesional no cambiaron
-          if(bk.pendienteId && fechaISO===bk.pendienteFecha && t===bk.pendienteHora && profIdParaCrear===bk.pendienteProfId){
+          if(bk.pendienteId && fechaISO===bk.pendienteFecha && t===bk.pendienteHora && profIdParaCrear===bk.pendienteProfId && bk.servicioId===bk.pendienteServicioId && (bk.duracion||60)===bk.pendienteDuracion){
             goStep(5);
             return;
           }
@@ -984,7 +992,7 @@
           const d=await r.json();
           if(r.status===409){showToast('Ese horario ya no está disponible, elegí otro');bk.time=null;el.classList.remove('sel');}
           else if(!r.ok){console.warn('Backend error:',r.status,d);showToast('No se pudo reservar el horario, intentá de nuevo');bk.time=null;el.classList.remove('sel');}
-          else{bk.pendienteId=d.id;bk.pendienteToken=d.token;bk.pendienteHora=t;bk.pendienteFecha=fechaISO;bk.pendienteProfId=profIdParaCrear;}
+          else{bk.pendienteId=d.id;bk.pendienteToken=d.token;bk.pendienteHora=t;bk.pendienteFecha=fechaISO;bk.pendienteProfId=profIdParaCrear;bk.pendienteServicioId=bk.servicioId;bk.pendienteDuracion=bk.duracion||60;}
         }catch(e){console.warn('No se pudo conectar:',e);}
       };
       g.appendChild(el);
@@ -1044,6 +1052,15 @@ if(cumple)lines.push(`🎂 *Cumpleaños:* ${cumple}`);
   token:bk.pendienteToken||null})
         });
         if(!confirmRes.ok){
+          if(confirmRes.status===409){
+            // Ya tiene otro turno o reserva que se cruza con este horario: no se genera el pago.
+            let msg409='Ya tenés un turno o reserva en ese horario. Elegí otro horario.';
+            try{const e409=await confirmRes.json();if(e409&&e409.error)msg409=e409.error;}catch(_){}
+            showToast(msg409);
+            bk.time=null;
+            goStep(4);
+            return;
+          }
           if(confirmRes.status>=500){
             // Error real de servidor (DB caída un instante, etc.) — no es que
             // el pendiente haya expirado. No tocar bk.*: sigue vivo, un
