@@ -154,19 +154,23 @@
     .tienda-hdr p{max-width:340px;font-size:.9rem;line-height:1.75;color:rgba(255,255,255,.55);}
     .prod-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
     .tienda-cta{text-align:center;margin-top:46px;}
-    #tienda .prod-card{background:rgba(253,250,245,.07);border:1px solid rgba(253,250,245,.14);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;}
+    /* Destacados en la landing: tarjetas compactas, 6 en fila (3 hasta 900px, 2 en celular). Columnas fijas:
+       con 1 a 5 productos quedan alineados a la izquierda sin estirarse. */
+    #tienda .prod-grid.prod-mini{grid-template-columns:repeat(6,minmax(0,1fr));gap:14px;}
+    @media(max-width:900px){#tienda .prod-grid.prod-mini{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;}}
+    @media(max-width:600px){#tienda .prod-grid.prod-mini{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}}
+    #tienda .prod-card{background:rgba(253,250,245,.07);border:1px solid rgba(253,250,245,.14);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;min-width:0;}
     #tienda .pc-foto{position:relative;aspect-ratio:1/1;background:rgba(253,250,245,.08);overflow:hidden;}
     #tienda .pc-foto img{width:100%;height:100%;object-fit:cover;display:block;}
     #tienda .pc-vacia{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--olive-pale);}
-    #tienda .pc-vacia svg{width:42px;height:42px;opacity:.55;}
-    #tienda .pc-badge{position:absolute;top:12px;left:12px;background:var(--olive-deep);color:var(--white);font-size:.66rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;padding:5px 12px;border-radius:50px;}
-    #tienda .pc-body{padding:16px 18px 20px;display:flex;flex-direction:column;gap:6px;flex:1;}
-    #tienda .pc-marca{font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--olive-pale);font-weight:400;min-height:1em;}
-    #tienda .pc-nombre{font-family:var(--serif);font-size:1.3rem;font-weight:600;line-height:1.2;color:var(--white);overflow-wrap:anywhere;}
-    #tienda .pc-desc{font-size:.8rem;line-height:1.55;color:rgba(255,255,255,.55);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;}
-    #tienda .pc-precio{font-size:1.1rem;font-weight:500;color:var(--white);margin-top:auto;padding-top:8px;font-variant-numeric:tabular-nums;}
-    #tienda .pc-sinstock{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-top:8px;}
-    #tienda .prod-card.agotado .pc-foto,#tienda .prod-card.agotado .pc-marca,#tienda .prod-card.agotado .pc-nombre,#tienda .prod-card.agotado .pc-desc,#tienda .prod-card.agotado .pc-precio{opacity:.45;}
+    #tienda .pc-vacia svg{width:30px;height:30px;opacity:.55;}
+    #tienda .pc-badge{position:absolute;top:8px;left:8px;background:var(--olive-deep);color:var(--white);font-size:.56rem;font-weight:500;letter-spacing:.09em;text-transform:uppercase;padding:3px 9px;border-radius:50px;}
+    #tienda .pc-body{padding:10px 11px 12px;display:flex;flex-direction:column;gap:3px;flex:1;}
+    #tienda .pc-marca{font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--olive-pale);font-weight:400;min-height:1em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    #tienda .pc-nombre{font-family:var(--serif);font-size:1rem;font-weight:600;line-height:1.2;color:var(--white);overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;min-height:2.4em;}
+    #tienda .pc-precio{font-size:.92rem;font-weight:500;color:var(--white);margin-top:auto;padding-top:4px;font-variant-numeric:tabular-nums;}
+    #tienda .pc-sinstock{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-top:4px;}
+    #tienda .prod-card.agotado .pc-foto,#tienda .prod-card.agotado .pc-marca,#tienda .prod-card.agotado .pc-nombre,#tienda .prod-card.agotado .pc-precio{opacity:.45;}
     .btn-ow{border:1.5px solid rgba(255,255,255,.35);color:var(--white);background:none;padding:13px 34px;border-radius:50px;font-family:var(--sans);font-size:.82rem;cursor:pointer;letter-spacing:.05em;text-decoration:none;display:inline-block;transition:all .25s;}
     .btn-ow:hover{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.65);}
     #club{background:var(--cream-dark);}
@@ -897,8 +901,8 @@
     const vacia='<div class="pc-vacia"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg></div>';
     return '<article class="prod-card'+(p.disponible===false?' agotado':'')+'">'+
       '<div class="pc-foto">'+(foto?'<img src="'+escTienda(foto)+'" alt="'+escTienda(p.nombre)+'" loading="lazy" onerror="this.remove()">':vacia)+(p.destacado?'<span class="pc-badge">Destacado</span>':'')+'</div>'+
-      '<div class="pc-body"><div class="pc-marca">'+escTienda(p.laboratorio||'')+'</div><h3 class="pc-nombre">'+escTienda(p.nombre)+'</h3>'+
-      '<p class="pc-desc">'+escTienda(p.descripcion||'')+'</p><div class="pc-precio">$'+Number(p.precio_publico||0).toLocaleString('es-AR',{maximumFractionDigits:0})+'</div>'+
+      '<div class="pc-body"><div class="pc-marca">'+escTienda(p.laboratorio||'')+'</div><h3 class="pc-nombre" title="'+escTienda(p.nombre)+'">'+escTienda(p.nombre)+'</h3>'+
+      '<div class="pc-precio">$'+Number(p.precio_publico||0).toLocaleString('es-AR',{maximumFractionDigits:0})+'</div>'+
       (p.disponible===false?'<div class="pc-sinstock">Sin stock</div>':'')+'</div></article>';
   }
   async function cargarDestacadosTienda(){
@@ -909,6 +913,7 @@
       const grid=document.querySelector('#tienda .prod-grid');
       if(!Array.isArray(d)||!d.length||!grid) return;
       grid.innerHTML=d.map(tarjetaTienda).join('');
+      grid.classList.add('prod-mini');
       grid.classList.add('vis');   // el contenedor es .reveal: que no quede en opacity 0
       const cta=document.querySelector('#tienda .tienda-cta');
       if(cta){cta.style.opacity='';cta.style.pointerEvents='';cta.classList.add('vis');cta.innerHTML='<a class="btn-ow" href="/tienda" style="text-decoration:none;display:inline-block;">Ver catálogo completo</a>';}
