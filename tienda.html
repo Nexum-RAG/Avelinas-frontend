@@ -140,14 +140,21 @@
     .tm-foto{position:relative;align-self:start;aspect-ratio:1/1;margin:24px 0 24px 24px;background:var(--cream-dark);border:1px solid var(--cream-mid);border-radius:14px;overflow:hidden;}
     .tm-foto img{width:100%;height:100%;object-fit:contain;object-position:center;display:block;}
     .tm-foto .pc-vacia svg{width:52px;height:52px;}
-    .tm-info{padding:30px 28px 26px;display:flex;flex-direction:column;gap:8px;min-width:0;}
+    .tm-info{--px:28px;padding:30px var(--px) 26px;display:flex;flex-direction:column;gap:8px;min-width:0;}
     .tm-nombre{font-family:var(--serif);font-size:1.7rem;font-weight:600;line-height:1.15;overflow-wrap:anywhere;padding-right:30px;}
     .tm-precio{font-size:1.3rem;font-weight:500;color:var(--olive-deep);font-variant-numeric:tabular-nums;}
     .tm-ruta{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--olive-mid);overflow-wrap:anywhere;}
     .tm-pills{display:flex;flex-wrap:wrap;gap:6px;}
     .tm-pill{font-size:.72rem;background:var(--cream);border:1px solid var(--cream-mid);color:var(--ink-mid);border-radius:50px;padding:3px 11px;overflow-wrap:anywhere;}
-    .tm-desc{font-size:.88rem;line-height:1.65;color:var(--ink-mid);white-space:pre-line;overflow-wrap:anywhere;}
-    .tm-acc{display:flex;flex-direction:column;gap:8px;margin-top:8px;}
+    /* Descripción: bloque propio, con altura máxima y scroll interno (fino) para que no empuje los botones. */
+    .tm-desc-box{background:var(--white);border:1px solid var(--cream-mid);border-radius:12px;padding:14px 16px;min-width:0;}
+    .tm-desc-tit{font-family:var(--sans);font-size:.68rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--olive-mid);margin:0 0 8px;}
+    .tm-desc{font-size:.88rem;line-height:1.6;color:var(--ink-mid);white-space:pre-line;overflow-wrap:anywhere;max-height:220px;overflow-y:auto;padding-right:6px;scrollbar-width:thin;scrollbar-color:var(--olive-pale) transparent;}
+    .tm-desc::-webkit-scrollbar{width:6px;}
+    .tm-desc::-webkit-scrollbar-thumb{background:var(--olive-pale);border-radius:6px;}
+    .tm-desc::-webkit-scrollbar-track{background:transparent;}
+    /* Los botones quedan pegados abajo del detalle aunque se desplace (siempre a la vista). */
+    .tm-acc{display:flex;flex-direction:column;gap:8px;margin:8px calc(var(--px) * -1) 0;padding:10px var(--px) 4px;position:sticky;bottom:0;background:var(--white);box-shadow:0 -10px 10px -10px rgba(37,40,32,.18);}
     .tm-add,.tm-wa,.t-enviar,.t-btn{display:flex;align-items:center;justify-content:center;gap:8px;text-align:center;text-decoration:none;border-radius:50px;padding:12px 18px;font-family:var(--sans);font-size:.84rem;font-weight:400;letter-spacing:.02em;cursor:pointer;transition:background .2s,color .2s;border:1.5px solid var(--olive);}
     .tm-add,.t-enviar{background:var(--olive);color:var(--white);}
     .tm-add:hover,.t-enviar:hover{background:var(--olive-mid);border-color:var(--olive-mid);}
@@ -194,7 +201,9 @@
       .t-drawer{height:auto;max-height:92vh;max-height:92dvh;}
       .tm{grid-template-columns:1fr;}
       .tm-foto{aspect-ratio:1/1;margin:16px 18px 0;border-radius:12px;}
-      .tm-info{padding:18px 18px 22px;}
+      .tm-info{--px:18px;padding:18px var(--px) 22px;}
+      .tm-desc{max-height:160px;}
+      .tm-acc{padding-bottom:calc(14px + env(safe-area-inset-bottom,0px));}
       .tm-nombre{font-size:1.45rem;}
     }
   </style>
@@ -697,7 +706,7 @@
         '<div class="tm-precio">'+esc(precioTxt(p.precio_publico))+'</div>'+
         ((cat||tipo)?'<div class="tm-ruta">'+esc([cat,tipo].filter(Boolean).join(' · '))+'</div>':'')+
         (atrs.length?'<div class="tm-pills">'+atrs.map(a=>'<span class="tm-pill">'+esc(a)+'</span>').join('')+'</div>':'')+
-        (p.descripcion?'<p class="tm-desc">'+esc(p.descripcion)+'</p>':'')+
+        (String(p.descripcion||'').trim()?'<section class="tm-desc-box" aria-label="Descripción"><h3 class="tm-desc-tit">Descripción</h3><div class="tm-desc" tabindex="0">'+esc(String(p.descripcion).trim())+'</div></section>':'')+
         '<div class="tm-acc">'+
           (agotado?'<div class="pc-sinstock">Sin stock</div>':'<button type="button" class="tm-add" data-act="add">'+ICONO_CARRITO+'Agregar al carrito</button>')+
           '<a class="tm-wa" href="'+esc(waUrl(consulta))+'" target="_blank" rel="noopener">'+ICONO_WA+'Consultar por WhatsApp</a>'+
