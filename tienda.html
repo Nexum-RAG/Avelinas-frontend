@@ -138,15 +138,23 @@
     .t-x:hover{background:var(--cream-dark);}
     .t-drawer .t-x{position:static;flex:none;background:var(--cream);}
     .tm{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);}
-    .tm-foto{position:relative;align-self:start;aspect-ratio:1/1;margin:24px 0 24px 24px;background:var(--cream-dark);border:1px solid var(--cream-mid);border-radius:14px;overflow:hidden;}
+    .tm-col{align-self:start;display:flex;flex-direction:column;gap:12px;margin:24px 0 24px 24px;min-width:0;container-type:inline-size;}
+    .tm-foto{position:relative;aspect-ratio:1/1;background:var(--cream-dark);border:1px solid var(--cream-mid);border-radius:14px;overflow:hidden;}
     .tm-foto img{width:100%;height:100%;object-fit:contain;object-position:center;display:block;}
     .tm-foto .pc-vacia svg{width:52px;height:52px;}
+    /* Sellos: hasta 4 recuadros con ícono de línea y etiqueta corta. Si la columna es angosta (celular) y son 4, pasan a 2×2. */
+    .tm-sellos{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;}
+    .sello{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:6px;min-width:0;padding:10px 4px 8px;border:1px solid var(--olive);border-radius:10px;color:var(--olive);text-align:center;background:transparent;}
+    .sello svg{width:26px;height:26px;flex:none;}
+    .sello span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-width:100%;font-size:.66rem;line-height:1.25;letter-spacing:.02em;color:var(--ink-mid);overflow-wrap:anywhere;hyphens:auto;}
+    @container (max-width:380px){
+      .tm-sellos[data-n="1"],.tm-sellos[data-n="2"],.tm-sellos[data-n="3"]{grid-template-columns:repeat(3,minmax(0,1fr));}
+      .tm-sellos[data-n="4"]{grid-template-columns:repeat(2,minmax(0,1fr));}
+      .sello span{font-size:.72rem;}
+    }
     .tm-info{--px:28px;padding:30px var(--px) 26px;display:flex;flex-direction:column;gap:8px;min-width:0;}
     .tm-nombre{font-family:var(--serif);font-size:1.7rem;font-weight:600;line-height:1.15;overflow-wrap:anywhere;padding-right:30px;}
     .tm-precio{font-size:1.3rem;font-weight:500;color:var(--olive-deep);font-variant-numeric:tabular-nums;}
-    .tm-ruta{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--olive-mid);overflow-wrap:anywhere;}
-    .tm-pills{display:flex;flex-wrap:wrap;gap:6px;}
-    .tm-pill{font-size:.72rem;background:var(--cream);border:1px solid var(--cream-mid);color:var(--ink-mid);border-radius:50px;padding:3px 11px;overflow-wrap:anywhere;}
     /* Descripción: bloque propio, con altura máxima y scroll interno (fino) para que no empuje los botones. */
     .tm-desc-box{background:var(--white);border:1px solid var(--cream-mid);border-radius:12px;padding:14px 16px;min-width:0;}
     .tm-desc-tit{font-family:var(--sans);font-size:.68rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--olive-mid);margin:0 0 8px;}
@@ -175,8 +183,8 @@
     .td-body{flex:1;overflow:auto;padding:6px 18px 12px;}
     .td-pie{padding:14px 18px 18px;border-top:1px solid var(--cream-mid);display:flex;flex-direction:column;gap:10px;background:var(--white);}
     .tc-it{display:grid;grid-template-columns:60px minmax(0,1fr);gap:12px;padding:12px 0;border-bottom:1px solid var(--cream);}
-    .tc-foto{width:60px;height:60px;border-radius:10px;overflow:hidden;background:var(--cream-dark);}
-    .tc-foto img{width:100%;height:100%;object-fit:cover;display:block;}
+    .tc-foto{width:60px;height:60px;aspect-ratio:1/1;border:1px solid var(--cream-mid);border-radius:10px;overflow:hidden;background:var(--cream-dark);}
+    .tc-foto img{width:100%;height:100%;object-fit:contain;object-position:center;display:block;}
     .tc-foto .pc-vacia svg{width:22px;height:22px;}
     .tc-nombre{font-family:var(--serif);font-size:1.02rem;font-weight:600;line-height:1.2;overflow-wrap:anywhere;}
     .tc-sub{font-size:.76rem;color:var(--ink-soft);margin-top:2px;}
@@ -206,7 +214,8 @@
       .t-modal{max-height:92vh;max-height:92dvh;}
       .t-drawer{height:auto;max-height:92vh;max-height:92dvh;}
       .tm{grid-template-columns:1fr;}
-      .tm-foto{aspect-ratio:1/1;margin:16px 18px 0;border-radius:12px;}
+      .tm-col{margin:16px 18px 0;}
+      .tm-foto{border-radius:12px;}
       .tm-info{--px:18px;padding:18px var(--px) 22px;}
       .tm-desc{max-height:160px;}
       .tm-acc{padding-bottom:calc(14px + env(safe-area-inset-bottom,0px));}
@@ -700,18 +709,63 @@
 
   // ── Detalle de producto ──
   let modalId=0, pedidoModal=0;
+  // ── Sellos del detalle: categoría (primer tramo), tipo y primeros atributos, hasta 4, con ícono de línea ──
+  // Íconos propios (24×24, trazo currentColor). Se eligen por el valor normalizado (sin tildes, mayúsculas ni signos);
+  // lo que no está en el mapa usa el ícono genérico. Estos SVG son código fijo; el texto que viene de la base va con esc().
+  const ICO={
+    cara:'<circle cx="12" cy="12" r="8.5"/><path d="M8.5 14.5c1 1.4 2.2 2 3.5 2s2.5-.6 3.5-2"/><path d="M9.2 10h.01M14.8 10h.01"/>',
+    pelo:'<path d="M7 3c-2 3 2 5 0 9s2 6 0 9"/><path d="M12 3c-2 3 2 5 0 9s2 6 0 9"/><path d="M17 3c-2 3 2 5 0 9s2 6 0 9"/>',
+    cuerpo:'<circle cx="12" cy="5" r="2.5"/><path d="M7.5 21v-6.5c0-3.5 1.5-5 4.5-5s4.5 1.5 4.5 5V21"/>',
+    unas:'<rect x="8" y="11" width="8" height="10" rx="2"/><path d="M10 11V8h4v3"/><path d="M11 8V3h2v5"/>',
+    pote:'<rect x="5" y="9" width="14" height="11" rx="2.5"/><path d="M6.5 9V7a1.5 1.5 0 011.5-1.5h8A1.5 1.5 0 0117.5 7v2"/><path d="M9 14h6"/>',
+    gota:'<path d="M12 3.5c3.2 4 5.5 6.8 5.5 10a5.5 5.5 0 01-11 0c0-3.2 2.3-6 5.5-10z"/>',
+    serum:'<path d="M10 3h4v3h-4z"/><path d="M11 6v2.5M13 6v2.5"/><rect x="8" y="8.5" width="8" height="12" rx="2.5"/><path d="M10.5 14h3"/>',
+    mascara:'<path d="M4 9c0-2.5 3.5-4 8-4s8 1.5 8 4v3c0 4.5-3.5 8-8 8s-8-3.5-8-8z"/><path d="M7.5 11h3M13.5 11h3M10 16h4"/>',
+    frasco:'<path d="M10 3.5h4M12 3.5V6"/><rect x="7.5" y="6" width="9" height="15" rx="2.5"/><path d="M10 12h4"/>',
+    tubo:'<path d="M7 3.5h10v3H7z"/><path d="M7.5 6.5L6 21h12l-1.5-14.5"/>',
+    aceite:'<path d="M10.5 3h3v3.5l2 3V20a1.5 1.5 0 01-1.5 1.5h-4A1.5 1.5 0 018.5 20V9.5l2-3z"/><path d="M12 13c1.2 1.4 1.8 2.3 1.8 3.1a1.8 1.8 0 01-3.6 0c0-.8.6-1.7 1.8-3.1z"/>',
+    sol:'<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6L7 7M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/>',
+    luna:'<path d="M20 14.5A8.5 8.5 0 119.5 4a7 7 0 0010.5 10.5z"/>',
+    reloj:'<path d="M7 3h10M7 21h10"/><path d="M8 3c0 4 4 5 4 9s-4 5-4 9M16 3c0 4-4 5-4 9s4 5 4 9"/>',
+    burbujas:'<circle cx="9" cy="14" r="5"/><circle cx="17" cy="8" r="3"/><circle cx="18" cy="17" r="2"/>',
+    hoja:'<path d="M5 19c0-8 5-14 14-14 0 9-6 14-14 14z"/><path d="M5 19l8-8"/>',
+    escudo:'<path d="M12 3l7 3v5.5c0 4.5-3 8-7 9.5-4-1.5-7-5-7-9.5V6z"/><path d="M12 9v6M9 12h6"/>',
+    etiqueta:'<path d="M3.5 12.2V4.5a1 1 0 011-1h7.7l8.3 8.3a1 1 0 010 1.4l-7.4 7.4a1 1 0 01-1.4 0z"/><circle cx="8" cy="8" r="1.2"/>'
+  };
+  const ICO_DE={facial:'cara',rostro:'cara',cabello:'pelo',capilar:'pelo',corporal:'cuerpo',cuerpo:'cuerpo',unas:'unas',
+    crema:'pote',gel:'gota',hidratante:'gota',hidratacion:'gota',humectante:'gota',tonico:'gota',serum:'serum',mascarilla:'mascara',mascara:'mascara',
+    shampoo:'frasco',locion:'frasco',acondicionador:'tubo',aceite:'aceite',protector:'sol',solar:'sol',dia:'sol',noche:'luna',
+    antiage:'reloj',antiedad:'reloj',limpieza:'burbujas',limpiador:'burbujas',exfoliante:'burbujas',
+    descongestivo:'hoja',nutritivo:'hoja',natural:'hoja',vegano:'hoja',reparador:'escudo',reparadora:'escudo',reparacion:'escudo'};
+  const claveSello=s=>norm(s).replace(/[^a-z0-9]+/g,'');
+  function sellosDe(p){
+    const out=[], vistos=new Set();
+    const add=t=>{
+      const v=String(t==null?'':t).replace(/\s+/g,' ').trim(); if(!v) return;
+      const k=claveSello(v); if(!k||vistos.has(k)) return;
+      vistos.add(k); out.push({txt:v,k});
+    };
+    add(String(p.categoria_tienda==null?'':p.categoria_tienda).split('/')[0]);   // ruta vieja "Facial / Crema / Noche": solo el primer tramo
+    add(tipoDe(p));
+    atrsDe(p).forEach(add);
+    return out.slice(0,4);
+  }
+  function sellosHtml(p){
+    const s=sellosDe(p); if(!s.length) return '';
+    return '<div class="tm-sellos" data-n="'+s.length+'">'+s.map(x=>{
+      const a=Array.from(x.txt), corto=a.length>24?a.slice(0,23).join('')+'…':x.txt;
+      return '<div class="sello" title="'+esc(x.txt)+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICO[ICO_DE[x.k]||'etiqueta']+'</svg><span>'+esc(corto)+'</span></div>';
+    }).join('')+'</div>';
+  }
   function htmlProducto(p){
     const id=idValido(p.id), foto=fotoSegura(p.foto_url), agotado=p.disponible===false;
-    const cat=catDe(p), tipo=tipoDe(p), atrs=atrsDe(p);
     const consulta='Hola! Me interesa: '+p.nombre+' ('+precioTxt(p.precio_publico)+')'+(PREVIEW||!id?'':' '+location.origin+'/tienda?p='+id);
     return '<div class="tm" data-id="'+id+'">'+
-      '<div class="tm-foto">'+(foto?'<img src="'+esc(foto)+'" alt="'+esc(p.nombre)+'">':'<div class="pc-vacia">'+ICONO_VACIO+'</div>')+(p.destacado?'<span class="pc-badge">Destacado</span>':'')+'</div>'+
+      '<div class="tm-col"><div class="tm-foto">'+(foto?'<img src="'+esc(foto)+'" alt="'+esc(p.nombre)+'">':'<div class="pc-vacia">'+ICONO_VACIO+'</div>')+(p.destacado?'<span class="pc-badge">Destacado</span>':'')+'</div>'+sellosHtml(p)+'</div>'+
       '<div class="tm-info">'+
         '<div class="pc-marca">'+esc(p.laboratorio||'')+'</div>'+
         '<h2 class="tm-nombre">'+esc(p.nombre)+'</h2>'+
         '<div class="tm-precio">'+esc(precioTxt(p.precio_publico))+'</div>'+
-        ((cat||tipo)?'<div class="tm-ruta">'+esc([cat,tipo].filter(Boolean).join(' · '))+'</div>':'')+
-        (atrs.length?'<div class="tm-pills">'+atrs.map(a=>'<span class="tm-pill">'+esc(a)+'</span>').join('')+'</div>':'')+
         (String(p.descripcion||'').trim()?'<section class="tm-desc-box" aria-label="Descripción"><h3 class="tm-desc-tit">Descripción</h3><div class="tm-desc" tabindex="0">'+esc(String(p.descripcion).trim())+'</div></section>':'')+
         '<div class="tm-acc">'+
           (agotado?'<div class="pc-sinstock">Sin stock</div>':'<button type="button" class="tm-add" data-act="add">'+ICONO_CARRITO+'Agregar al carrito</button>')+
