@@ -150,6 +150,11 @@
     .tm-desc-box{background:var(--white);border:1px solid var(--cream-mid);border-radius:12px;padding:14px 16px;min-width:0;}
     .tm-desc-tit{font-family:var(--sans);font-size:.68rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--olive-mid);margin:0 0 8px;}
     .tm-desc{font-size:.88rem;line-height:1.6;color:var(--ink-mid);white-space:pre-line;overflow-wrap:anywhere;max-height:220px;overflow-y:auto;padding-right:6px;scrollbar-width:thin;scrollbar-color:var(--olive-pale) transparent;}
+    /* Foco: nunca el borde oscuro del navegador. Con mouse no se ve nada; con teclado, un aro suave de la paleta. */
+    .t-ov :focus{outline:none;}
+    .t-ov :focus-visible{outline:2px solid var(--olive-light);outline-offset:2px;}
+    .t-ov .t-sheet:focus-visible,.t-ov .tm-desc:focus-visible{outline:none;}
+    .tm-desc:focus-visible{box-shadow:0 0 0 2px var(--olive-pale);border-radius:6px;}
     .tm-desc::-webkit-scrollbar{width:6px;}
     .tm-desc::-webkit-scrollbar-thumb{background:var(--olive-pale);border-radius:6px;}
     .tm-desc::-webkit-scrollbar-track{background:transparent;}
@@ -459,7 +464,7 @@
   const FOCUSABLE='a[href],button:not([disabled]),input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"])';
   const focuseables=ov=>[...ov.firstElementChild.querySelectorAll(FOCUSABLE)].filter(e=>!e.closest('[hidden]')&&e.getClientRects().length);
   function enfocar(ov){
-    const f=focuseables(ov).filter(e=>!e.classList.contains('t-x'))[0]||focuseables(ov)[0];
+    const f=focuseables(ov).filter(e=>!e.classList.contains('t-x')&&!e.classList.contains('tm-desc'))[0]||focuseables(ov)[0];
     (f||ov.firstElementChild).focus({preventScroll:true});
   }
   function abrirCapa(ov){
