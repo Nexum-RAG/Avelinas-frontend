@@ -42,7 +42,13 @@
     .t-sel{flex:0 1 200px;min-width:0;cursor:pointer;}
     .t-inp:focus,.t-sel:focus{border-color:var(--olive-mid);}
     .t-sel[hidden]{display:none;}
-    .t-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px;}
+    .t-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;position:relative;}
+    #grilla{margin-top:12px;}
+    /* Celular: cada fila de chips es una sola línea que se desplaza de costado (sin saltar de renglón). */
+    @media(max-width:600px){
+      .t-chips{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;padding-bottom:4px;}
+      .t-chip{flex:none;white-space:nowrap;}
+    }
     .t-chips[hidden]{display:none;}
     .t-chip{font-family:var(--sans);font-size:.76rem;font-weight:400;letter-spacing:.02em;color:var(--ink-mid);background:var(--white);border:1.5px solid var(--cream-mid);border-radius:50px;padding:7px 15px;cursor:pointer;transition:all .2s;}
     .t-chip:hover{border-color:var(--olive-mid);color:var(--olive);}
@@ -129,6 +135,8 @@
     <select class="t-sel" id="fMarca" aria-label="Filtrar por marca" hidden></select>
   </div>
   <div class="t-chips" id="fChips" role="group" aria-label="Categorías" hidden></div>
+  <div class="t-chips" id="fTipos" role="group" aria-label="Tipos" hidden></div>
+  <div class="t-chips" id="fAtrs" role="group" aria-label="Atributos" hidden></div>
 
   <div class="t-grid" id="grilla"><div class="t-cargando">Cargando productos…</div></div>
 </main>
@@ -183,34 +191,66 @@
     sel.hidden=!valores.length;
   }
 
-  let catActual='';
+  // Filtros por chips en tres filas: categoría → tipo (de la categoría elegida) → atributos (combinables).
+  // Los datos viejos (sin tipo_tienda / atributos_tienda) se toleran: esas filas quedan ocultas.
+  let catActual='', tipoActual='', atrActual=[];
+  const catDe=p=>String(p.categoria_tienda||'').trim();
+  const tipoDe=p=>String(p.tipo_tienda||'').trim();
+  const atrsDe=p=>Array.isArray(p.atributos_tienda)?p.atributos_tienda.map(a=>String(a==null?'':a).trim()).filter(Boolean):[];
+  const ordenados=arr=>[...new Set(arr.filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+
+  function chip(valor,etiqueta,activo){
+    return '<button type="button" class="t-chip'+(activo?' act':'')+'" data-v="'+esc(valor)+'" aria-pressed="'+activo+'">'+esc(etiqueta)+'</button>';
+  }
+  function fila(el,valores,esActivo,todas){
+    const desp=el.scrollLeft;
+    el.hidden=!valores.length;
+    el.innerHTML=valores.length?(todas?chip('',todas,!valores.some(esActivo)):'')+valores.map(v=>chip(v,v,esActivo(v))).join(''):'';
+    // Al re-armar la fila se conserva el desplazamiento; si el chip activo quedó fuera de vista, se lo trae.
+    el.scrollLeft=desp;
+    const a=el.querySelector('.t-chip.act');
+    if(a&&el.scrollWidth>el.clientWidth&&(a.offsetLeft<el.scrollLeft||a.offsetLeft+a.offsetWidth>el.scrollLeft+el.clientWidth)) el.scrollLeft=Math.max(0,a.offsetLeft-12);
+  }
+
+  function armarChips(){
+    const cats=ordenados(PRODUCTOS.map(catDe));
+    if(!cats.includes(catActual)) catActual='';
+    const deCat=PRODUCTOS.filter(p=>!catActual||catDe(p)===catActual);
+    const tipos=catActual?ordenados(deCat.map(tipoDe)):[];
+    if(!tipos.includes(tipoActual)) tipoActual='';
+    const deTipo=deCat.filter(p=>!tipoActual||tipoDe(p)===tipoActual);
+    const atrs=ordenados(deTipo.reduce((acc,p)=>acc.concat(atrsDe(p)),[]));
+    atrActual=atrActual.filter(a=>atrs.includes(a));
+    fila($('fChips'),cats,c=>c===catActual,'Todas');
+    fila($('fTipos'),tipos,t=>t===tipoActual,'Todos');
+    fila($('fAtrs'),atrs,a=>atrActual.includes(a),'');
+  }
+
   function armarFiltros(){
     const unicos=k=>[...new Set(PRODUCTOS.map(p=>String(p[k]||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
     opciones($('fMarca'),unicos('laboratorio'),'Todas las marcas');
-    const cats=unicos('categoria_tienda');
-    if(!cats.includes(catActual)) catActual='';
-    const chips=$('fChips');
-    chips.hidden=!cats.length;
-    chips.innerHTML=cats.length?['']
-      .concat(cats).map(c=>'<button type="button" class="t-chip'+(c===catActual?' act':'')+'" data-cat="'+esc(c)+'" aria-pressed="'+(c===catActual)+'">'+esc(c||'Todas')+'</button>').join(''):'';
+    armarChips();
     $('filtros').hidden=false;
   }
 
   function render(){
     const q=norm($('fBuscar').value.trim()), marca=$('fMarca').value;
     const lista=PRODUCTOS.filter(p=>
-      (!catActual||p.categoria_tienda===catActual)&&(!marca||p.laboratorio===marca)&&
-      (!q||q.split(/\s+/).every(w=>norm([p.nombre,p.laboratorio,p.categoria_tienda,p.descripcion].join(' ')).includes(w))));
+      (!catActual||catDe(p)===catActual)&&(!tipoActual||tipoDe(p)===tipoActual)&&
+      atrActual.every(a=>atrsDe(p).includes(a))&&(!marca||p.laboratorio===marca)&&
+      (!q||q.split(/\s+/).every(w=>norm([p.nombre,p.laboratorio,p.categoria_tienda,p.tipo_tienda,atrsDe(p).join(' '),p.descripcion].join(' ')).includes(w))));
     $('grilla').innerHTML=lista.length?lista.map(tarjeta).join(''):estado('🔍','Sin resultados','No encontramos productos con esa búsqueda. Probá con otras palabras o limpiá los filtros.');
   }
 
-  // Chips de categoría (delegado: se re-arman al cargar).
-  $('fChips').addEventListener('click',e=>{
+  // Chips (delegado: se re-arman al elegir).
+  function alElegir(e,cambio){
     const b=e.target.closest('.t-chip'); if(!b) return;
-    catActual=b.dataset.cat;
-    $('fChips').querySelectorAll('.t-chip').forEach(x=>{const on=x.dataset.cat===catActual;x.classList.toggle('act',on);x.setAttribute('aria-pressed',on);});
-    render();
-  });
+    cambio(b.dataset.v);
+    armarChips(); render();
+  }
+  $('fChips').addEventListener('click',e=>alElegir(e,v=>{catActual=v;tipoActual='';atrActual=[];}));
+  $('fTipos').addEventListener('click',e=>alElegir(e,v=>{tipoActual=v;}));
+  $('fAtrs').addEventListener('click',e=>alElegir(e,v=>{atrActual=atrActual.includes(v)?atrActual.filter(a=>a!==v):atrActual.concat(v);}));
 
   // Si una foto no carga, se cambia por el recuadro neutro (el evento error no burbujea: se captura).
   $('grilla').addEventListener('error',e=>{
@@ -222,13 +262,13 @@
   function productosDeEjemplo(){
     const svg=(c1,c2)=>'data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+c1+'"/><stop offset="1" stop-color="'+c2+'"/></linearGradient></defs><rect width="200" height="200" fill="url(#g)"/><rect x="78" y="40" width="44" height="120" rx="14" fill="rgba(255,255,255,.55)"/></svg>');
     return [
-      {id:1,nombre:'Shampoo reparador 300 ml',descripcion:'Limpia suavemente y repara la fibra capilar dañada por el calor y el color.',categoria_tienda:'Cabello',laboratorio:'Lidherma',precio_publico:18500,foto_url:svg('#c8d3b0','#8fa07a'),destacado:true,disponible:true},
-      {id:2,nombre:'Acondicionador hidratante',descripcion:'Hidratación profunda con aceite de argán para un cabello suave y brillante.',categoria_tienda:'Cabello',laboratorio:'Lidherma',precio_publico:17200,foto_url:svg('#e4d9c4','#c9b48a'),destacado:false,disponible:true},
-      {id:3,nombre:'Sérum facial vitamina C',descripcion:'Ilumina y unifica el tono de la piel. Uso diario, por la mañana.',categoria_tienda:'Rostro',laboratorio:'Biobellus',precio_publico:32900,foto_url:svg('#f0d9b5','#e0a96d'),destacado:true,disponible:true},
+      {id:1,nombre:'Shampoo reparador 300 ml',descripcion:'Limpia suavemente y repara la fibra capilar dañada por el calor y el color.',categoria_tienda:'Cabello',tipo_tienda:'Shampoo',atributos_tienda:['Reparador'],laboratorio:'Lidherma',precio_publico:18500,foto_url:svg('#c8d3b0','#8fa07a'),destacado:true,disponible:true},
+      {id:2,nombre:'Acondicionador hidratante',descripcion:'Hidratación profunda con aceite de argán para un cabello suave y brillante.',categoria_tienda:'Cabello',tipo_tienda:'Acondicionador',atributos_tienda:['Hidratante'],laboratorio:'Lidherma',precio_publico:17200,foto_url:svg('#e4d9c4','#c9b48a'),destacado:false,disponible:true},
+      {id:3,nombre:'Sérum facial vitamina C',descripcion:'Ilumina y unifica el tono de la piel. Uso diario, por la mañana.',categoria_tienda:'Rostro',tipo_tienda:'Sérum',atributos_tienda:['Día','Antiage'],laboratorio:'Biobellus',precio_publico:32900,foto_url:svg('#f0d9b5','#e0a96d'),destacado:true,disponible:true},
       {id:4,nombre:'Crema de manos nutritiva',descripcion:'Textura liviana de rápida absorción. Ideal después de la manicura.',categoria_tienda:'Cuerpo',laboratorio:'Corea',precio_publico:9800,foto_url:null,destacado:false,disponible:true},
       {id:5,nombre:'Esmalte semipermanente rojo',descripcion:'Color intenso y duradero, secado en cabina LED.',categoria_tienda:'Uñas',laboratorio:'Corea',precio_publico:7400,foto_url:svg('#e7b4a8','#b9584a'),destacado:false,disponible:true},
       {id:6,nombre:'Mascarilla nutritiva con keratina y proteínas de seda para cabello muy dañado',descripcion:'Tratamiento intensivo semanal que devuelve elasticidad, suavidad y brillo desde la primera aplicación, con una descripción bastante larga para probar el recorte.',categoria_tienda:'Cabello',laboratorio:'Biobellus',precio_publico:24600,foto_url:null,destacado:false,disponible:true},
-      {id:7,nombre:'Protector solar facial FPS 50',descripcion:'Protección alta, sin brillo y base perfecta para el maquillaje.',categoria_tienda:'Rostro',laboratorio:'Biobellus',precio_publico:21300,foto_url:svg('#d7e3f0','#8fb0cf'),destacado:false,disponible:false},
+      {id:7,nombre:'Protector solar facial FPS 50',descripcion:'Protección alta, sin brillo y base perfecta para el maquillaje.',categoria_tienda:'Rostro',tipo_tienda:'Protector',atributos_tienda:['Día'],laboratorio:'Biobellus',precio_publico:21300,foto_url:svg('#d7e3f0','#8fb0cf'),destacado:false,disponible:false},
       {id:8,nombre:'Aceite corporal de almendras',descripcion:'Masaje y nutrición para la piel. Aroma suave.',categoria_tienda:'Cuerpo',laboratorio:'Lidherma',precio_publico:15900,foto_url:svg('#f3e8c8','#d9bd72'),destacado:false,disponible:true},
     ];
   }
@@ -248,14 +288,14 @@
       }
       PRODUCTOS=datos;
       if(!PRODUCTOS.length){
-        $('filtros').hidden=true; $('fChips').hidden=true;
+        $('filtros').hidden=true; $('fChips').hidden=true; $('fTipos').hidden=true; $('fAtrs').hidden=true;
         $('grilla').innerHTML=estado('🛍️','Estamos <em>preparando</em> la tienda','Muy pronto vas a encontrar acá los productos que usamos y recomendamos.');
         return;
       }
       armarFiltros();
       render();
     }catch(e){
-      $('filtros').hidden=true; $('fChips').hidden=true;
+      $('filtros').hidden=true; $('fChips').hidden=true; $('fTipos').hidden=true; $('fAtrs').hidden=true;
       $('grilla').innerHTML=estado('⚠️','No pudimos cargar la tienda','Revisá tu conexión e intentá de nuevo en un momento.','<button class="t-reintentar" id="btnReintentar" type="button">Reintentar</button>');
       const b=$('btnReintentar'); if(b) b.addEventListener('click',cargar);
     }
