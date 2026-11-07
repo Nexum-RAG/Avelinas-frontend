@@ -21,8 +21,6 @@
     .nav-links{display:flex;gap:30px;list-style:none;}
     .nav-links a{text-decoration:none;font-size:.78rem;font-weight:400;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mid);transition:color .2s;}
     .nav-links a:hover,.nav-links a.activo{color:var(--olive);}
-    .nav-btn{background:var(--olive);color:var(--white);padding:10px 22px;border-radius:50px;font-size:.78rem;font-weight:400;letter-spacing:.08em;text-decoration:none;transition:background .2s;white-space:nowrap;}
-    .nav-btn:hover{background:var(--olive-mid);}
 
     /* CABECERA: etiqueta, título en una línea y subtítulo, arriba del buscador */
     main{padding:112px 40px 80px;max-width:1500px;margin:0 auto;}
@@ -99,15 +97,14 @@
       main{padding:96px 22px 60px;}
     }
     @media(max-width:600px){
-      .nav-btn{padding:9px 16px;font-size:.72rem;}
       .t-sel{flex:1 1 140px;}
     }
     @media(max-width:499px){
       .t-titulo{white-space:normal;font-size:1.7rem;}
     }
 
-    /* NAV: ícono del carrito junto a "Reservar turno" */
-    .nav-der{display:flex;align-items:center;gap:12px;}
+    /* NAV: ícono del carrito a la derecha */
+    .nav-der{display:flex;align-items:center;}
     .nav-cart{position:relative;width:42px;height:42px;border-radius:50%;border:1.5px solid var(--olive);background:none;color:var(--olive);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s,color .2s;flex:none;}
     .nav-cart:hover{background:var(--olive);color:var(--white);}
     .nav-cart svg{width:19px;height:19px;}
@@ -210,7 +207,6 @@
     #tToast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);z-index:400;background:var(--olive-deep);color:var(--white);font-size:.82rem;padding:10px 20px;border-radius:50px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-width:calc(100% - 32px);text-align:center;}
     #tToast.on{opacity:1;transform:translateX(-50%);}
     @media(max-width:600px){
-      .nav-der{gap:8px;}
       #tToast{bottom:auto;top:78px;transform:translateX(-50%) translateY(-16px);}
       #tToast.on{transform:translateX(-50%);}
       .t-ov,.t-ov.der{align-items:flex-end;justify-content:center;padding:0;}
@@ -242,7 +238,6 @@
   </ul>
   <div class="nav-der">
     <button type="button" class="nav-cart" id="btnCarrito" aria-label="Carrito, vacío" aria-haspopup="dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg><span class="cnt" id="cntCarrito" hidden>0</span></button>
-    <a href="/#turnos" class="nav-btn">Reservar turno</a>
   </div>
 </nav>
 
@@ -642,7 +637,19 @@
 
   // ── Panel del carrito ──
   const fotoHtml=p=>{const f=p&&fotoSegura(p.foto_url); return f?'<img src="'+esc(f)+'" alt="">':'<div class="pc-vacia">'+ICONO_VACIO+'</div>';};
+  // El panel se vuelve a dibujar (al verificar, al sumar/quitar...): el foco no se pierde. Si el elemento que lo tenía sigue
+  // existiendo (mismo botón del mismo producto) vuelve a él; si no, al primer elemento del panel.
   function renderCarrito(){
+    const ov=$('ovCarrito'), ae=document.activeElement;
+    const clave=e=>{const f=e.closest('[data-id]'); return (e.dataset.act||'')+'|'+(f?f.dataset.id:'')+'|'+(e.dataset.send?'s':'');};
+    const antes=ae&&ov.contains(ae)&&ae!==ov.firstElementChild?clave(ae):null;
+    dibujarCarrito();
+    if(antes!==null&&!ov.contains(document.activeElement)){
+      const igual=[...ov.querySelectorAll('[data-act],[data-send]')].find(e=>!e.disabled&&clave(e)===antes);
+      (igual||focuseables(ov)[0]||ov.firstElementChild).focus({preventScroll:true});
+    }
+  }
+  function dibujarCarrito(){
     const cont=$('tcCont'), pie=$('tcPie');
     const aviso=avisoAlmacen?'<div class="tc-msg warn" role="status">'+esc(avisoAlmacen)+'</div>':'';
     if(!carrito.length){
