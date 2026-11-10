@@ -12,10 +12,10 @@
     /* Tokens y base duplicados de index.html a propósito (la landing no se refactoriza). */
     :root{--olive:#5a6348;--olive-deep:#3e4733;--olive-mid:#6e7d5b;--olive-light:#8fa07a;--olive-pale:#c8d3b0;--cream:#f6f1e9;--cream-dark:#ede5d4;--cream-mid:#e4d9c4;--white:#fdfaf5;--ink:#252820;--ink-mid:#484b3e;--ink-soft:#7a7d6d;--serif:'Cormorant Garamond',Georgia,serif;--sans:'DM Sans',system-ui,sans-serif;}
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-    body{background:var(--cream);color:var(--ink);font-family:var(--sans);font-weight:300;overflow-x:hidden;line-height:1.5;}
+    body{background:var(--olive);color:var(--ink);font-family:var(--sans);font-weight:300;overflow-x:hidden;line-height:1.5;}
 
     /* NAV */
-    nav{position:fixed;top:0;left:0;right:0;z-index:200;padding:12px 60px;display:flex;align-items:center;justify-content:space-between;gap:20px;background:rgba(246,241,233,0.93);backdrop-filter:blur(16px);border-bottom:1px solid rgba(90,99,72,0.10);}
+    nav{position:fixed;top:0;left:0;right:0;z-index:200;padding:12px 60px;display:flex;align-items:center;justify-content:space-between;gap:20px;background:var(--cream);box-shadow:0 1px 0 rgba(90,99,72,0.12),0 6px 18px rgba(37,40,32,0.10);}
     .nav-logo{display:flex;align-items:center;text-decoration:none;font-family:var(--serif);font-size:1.55rem;color:var(--olive);}
     .nav-logo img{height:64px;width:auto;display:block;}
     .nav-links{display:flex;gap:30px;list-style:none;}
@@ -23,13 +23,14 @@
     .nav-links a:hover,.nav-links a.activo{color:var(--olive);}
 
     /* CABECERA: etiqueta, título en una línea y subtítulo, arriba del buscador */
-    main{padding:112px 40px 80px;max-width:1500px;margin:0 auto;}
-    .sec-label{font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--olive-mid);font-weight:400;display:flex;align-items:center;gap:10px;margin-bottom:8px;}
-    .sec-label::before{content:'';width:22px;height:1px;background:var(--olive-mid);display:block;}
-    .t-hdr{margin-bottom:22px;}
-    .t-titulo{font-family:var(--serif);font-size:3rem;font-weight:600;line-height:1.15;color:var(--ink);letter-spacing:-.005em;white-space:nowrap;}
-    .t-titulo em{font-style:normal;color:var(--olive-mid);}
-    .t-hdr p{margin-top:6px;font-size:.86rem;line-height:1.6;color:var(--ink-soft);max-width:560px;}
+    /* La página es verde y todo el contenido vive en una card crema (la nav fija queda arriba, sobre fondo crema). */
+    main{width:min(1500px,calc(100% - 48px));margin:104px auto 40px;padding:48px 48px 56px;background:var(--cream);border-radius:24px;box-shadow:0 2px 6px rgba(37,40,32,.12),0 24px 60px rgba(37,40,32,.24);}
+    .sec-label{font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--olive-mid);font-weight:400;display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:10px;}
+    .sec-label::before,.sec-label::after{content:'';width:34px;height:1px;background:var(--olive-mid);display:block;}
+    .t-hdr{margin-bottom:30px;text-align:center;}
+    .t-titulo{font-family:var(--serif);font-size:3.2rem;font-weight:600;line-height:1.12;color:var(--ink);letter-spacing:-.005em;text-wrap:balance;}
+    .t-titulo em{display:block;font-style:normal;color:var(--olive);}
+    .t-hdr p{margin:12px auto 0;font-size:.8rem;line-height:1.6;color:var(--ink-soft);max-width:460px;}
     .preview-banner{background:#f3e3b8;border:1px solid #d9bd72;color:#6b5314;border-radius:12px;padding:10px 16px;font-size:.84rem;font-weight:400;margin-bottom:18px;text-align:center;}
 
     /* FILTROS: buscador + marca, y chips de categoría */
@@ -146,17 +147,15 @@
       nav{padding:10px 22px;}
       .nav-logo img{height:52px;}
       .nav-links{display:none;}
-      main{padding:96px 22px 60px;}
+      main{width:calc(100% - 32px);margin:88px auto 28px;padding:36px 24px 40px;}
     }
     @media(max-width:600px){
       .t-sel{flex:1 1 140px;}
     }
-    @media(max-width:900px){
-      .t-titulo{white-space:normal;}
-      .t-titulo em{white-space:nowrap;}
-    }
     @media(max-width:600px){
-      .t-titulo{font-size:2.1rem;}
+      main{width:calc(100% - 22px);margin:84px auto 22px;padding:28px 14px 32px;border-radius:22px;}
+      .t-titulo{font-size:2rem;}
+      .t-hdr{margin-bottom:22px;}
     }
 
     /* NAV: ícono del carrito a la derecha */
