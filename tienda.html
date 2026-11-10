@@ -7,12 +7,12 @@
   <meta name="description" content="Productos que usamos y recomendamos en Avelinas." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&display=swap" rel="stylesheet">
   <style>
     /* Tokens y base duplicados de index.html a propósito (la landing no se refactoriza). */
     :root{--olive:#5a6348;--olive-deep:#3e4733;--olive-mid:#6e7d5b;--olive-light:#8fa07a;--olive-pale:#c8d3b0;--cream:#f6f1e9;--cream-dark:#ede5d4;--cream-mid:#e4d9c4;--white:#fdfaf5;--ink:#252820;--ink-mid:#484b3e;--ink-soft:#7a7d6d;--serif:'Cormorant Garamond',Georgia,serif;--sans:'DM Sans',system-ui,sans-serif;}
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-    body{background:var(--olive);color:var(--ink);font-family:var(--sans);font-weight:300;overflow-x:hidden;line-height:1.5;}
+    body{background:radial-gradient(ellipse at 12% 6%,rgba(143,160,122,.6),transparent 55%),radial-gradient(ellipse at 92% 94%,rgba(62,71,51,.7),transparent 55%),linear-gradient(160deg,var(--olive-mid) 0%,var(--olive) 50%,var(--olive-deep) 100%);background-color:var(--olive);min-height:100vh;color:var(--ink);font-family:var(--sans);font-weight:300;overflow-x:hidden;line-height:1.5;}
 
     /* NAV */
     nav{position:fixed;top:0;left:0;right:0;z-index:200;padding:12px 60px;display:flex;align-items:center;justify-content:space-between;gap:20px;background:var(--cream);box-shadow:0 1px 0 rgba(90,99,72,0.12),0 6px 18px rgba(37,40,32,0.10);}
@@ -23,32 +23,33 @@
     .nav-links a:hover,.nav-links a.activo{color:var(--olive);}
 
     /* CABECERA: etiqueta, título en una línea y subtítulo, arriba del buscador */
-    /* La página es verde y todo el contenido vive en una card crema (la nav fija queda arriba, sobre fondo crema). */
-    main{width:min(1500px,calc(100% - 48px));margin:104px auto 40px;padding:48px 48px 56px;background:var(--cream);border-radius:24px;box-shadow:0 2px 6px rgba(37,40,32,.12),0 24px 60px rgba(37,40,32,.24);}
+    /* La página es un degradé verde y todo el contenido vive en una card crema semitransparente con blur (en celular sin blur: opaca). */
+    main{width:min(1500px,calc(100% - 48px));margin:104px auto 40px;padding:48px 48px 56px;background:rgba(246,241,233,.88);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-radius:24px;box-shadow:0 2px 6px rgba(37,40,32,.12),0 24px 60px rgba(37,40,32,.24);}
     .sec-label{font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--olive-mid);font-weight:400;display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:10px;}
     .sec-label::before,.sec-label::after{content:'';width:34px;height:1px;background:var(--olive-mid);display:block;}
     .t-hdr{margin-bottom:30px;text-align:center;}
-    .t-titulo{font-family:var(--serif);font-size:3.2rem;font-weight:600;line-height:1.12;color:var(--ink);letter-spacing:-.005em;text-wrap:balance;}
-    .t-titulo em{display:block;font-style:normal;color:var(--olive);}
+    .t-titulo{font-family:'Playfair Display',var(--serif);font-size:clamp(3.2rem,4.4vw,4rem);font-weight:700;line-height:1.12;color:var(--ink);letter-spacing:-.01em;white-space:nowrap;}
+    .t-titulo em{font-style:italic;font-weight:600;color:var(--olive);}
     .t-hdr p{margin:12px auto 0;font-size:.8rem;line-height:1.6;color:var(--ink-soft);max-width:460px;}
     .preview-banner{background:#f3e3b8;border:1px solid #d9bd72;color:#6b5314;border-radius:12px;padding:10px 16px;font-size:.84rem;font-weight:400;margin-bottom:18px;text-align:center;}
 
     /* FILTROS: buscador + marca, y chips de categoría */
-    .t-filtros{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+    /* Escritorio: buscador (flexible, a la izquierda) y categorías (a la derecha) en la misma fila; si no entran, bajan a dos filas. */
+    .t-top{display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px 20px;}
+    .t-filtros{flex:1 1 280px;min-width:0;display:flex;}
     .t-filtros[hidden]{display:none;}
     .t-inp,.t-sel{font-family:var(--sans);font-size:.84rem;font-weight:300;color:var(--ink);background:var(--white);border:1.5px solid var(--cream-mid);border-radius:50px;padding:9px 16px;outline:none;transition:border-color .2s;}
-    .t-inp{flex:1 1 240px;min-width:0;}
+    .t-inp{flex:1 1 auto;min-width:0;}
     .t-sel{flex:0 1 200px;min-width:0;cursor:pointer;}
     .t-inp:focus,.t-sel:focus{border-color:var(--olive-mid);}
     .t-sel[hidden]{display:none;}
     #grilla{margin-top:12px;}
-    /* CATEGORÍA: pestañas sobre una línea verde; la elegida va en verde sólido. */
-    .t-cat{margin-bottom:12px;}
+    /* CATEGORÍA: chips tipo pestaña; la elegida va en verde sólido. */
+    .t-cat{flex:0 1 auto;min-width:0;max-width:100%;}
     .t-cat[hidden]{display:none;}
     .t-rot{font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--olive-mid);font-weight:500;margin:0 0 6px 2px;}
     .t-chips{display:flex;gap:6px;flex-wrap:wrap;position:relative;}
-    .t-tabs{border-bottom:2px solid var(--olive);}
-    .t-chip{font-family:var(--sans);font-size:.78rem;font-weight:400;letter-spacing:.02em;color:var(--ink-mid);background:var(--white);border:1.5px solid var(--cream-mid);border-bottom:none;border-radius:12px 12px 0 0;padding:9px 16px 8px;cursor:pointer;transition:background .2s,color .2s,border-color .2s;}
+    .t-chip{font-family:var(--sans);font-size:.78rem;font-weight:400;letter-spacing:.02em;color:var(--ink-mid);background:var(--white);border:1.5px solid var(--cream-mid);border-radius:50px;padding:8px 16px;cursor:pointer;transition:background .2s,color .2s,border-color .2s;}
     .t-chip:hover{border-color:var(--olive-mid);color:var(--olive);}
     .t-chip.act{background:var(--olive);border-color:var(--olive);color:var(--white);}
 
@@ -149,13 +150,20 @@
       .nav-links{display:none;}
       main{width:calc(100% - 32px);margin:88px auto 28px;padding:36px 24px 40px;}
     }
-    @media(max-width:600px){
-      .t-sel{flex:1 1 140px;}
+    /* Título: por debajo de 900px puede partirse en dos líneas (balanceadas; a 901px el texto ocupa ~720px de ~757px); en celular, siempre dos líneas centradas. */
+    @media(max-width:900px){
+      .t-titulo{white-space:normal;text-wrap:balance;}
+      .t-titulo em{white-space:nowrap;}
     }
     @media(max-width:600px){
-      main{width:calc(100% - 22px);margin:84px auto 22px;padding:28px 14px 32px;border-radius:22px;}
-      .t-titulo{font-size:2rem;}
+      main{width:calc(100% - 22px);margin:84px auto 22px;padding:28px 14px 32px;border-radius:22px;background:rgba(246,241,233,.96);-webkit-backdrop-filter:none;backdrop-filter:none;}
+      .t-titulo{font-size:2.2rem;}
+      .t-titulo em{display:block;}
       .t-hdr{margin-bottom:22px;}
+      .t-top{display:block;}
+      .t-filtros{margin-bottom:14px;}
+      .t-cat{margin-bottom:0;}
+      .t-sel{flex:1 1 100%;min-height:44px;}
     }
 
     /* NAV: ícono del carrito a la derecha */
@@ -305,15 +313,17 @@
 
   <div id="previewBanner" class="preview-banner" hidden>Vista previa — datos de ejemplo</div>
 
-  <div class="t-filtros" id="filtros" hidden>
-    <input class="t-inp" type="search" id="fBuscar" placeholder="Buscar producto, marca o categoría…" aria-label="Buscar productos" autocomplete="off">
-    <select class="t-sel" id="fMarca" aria-label="Filtrar por marca" hidden></select>
-  </div>
-  <div class="t-cat" id="fCat" hidden>
-    <div class="t-rot" id="fCatRot">Categoría</div>
-    <div class="t-chips t-tabs" id="fChips" role="group" aria-labelledby="fCatRot"></div>
+  <div class="t-top">
+    <div class="t-filtros" id="filtros" hidden>
+      <input class="t-inp" type="search" id="fBuscar" placeholder="Buscar producto, marca o categoría…" aria-label="Buscar productos" autocomplete="off">
+    </div>
+    <div class="t-cat" id="fCat" hidden>
+      <div class="t-rot" id="fCatRot">Categoría</div>
+      <div class="t-chips t-tabs" id="fChips" role="group" aria-labelledby="fCatRot"></div>
+    </div>
   </div>
   <div class="t-barra" id="fBarra" hidden>
+    <select class="t-sel" id="fMarca" aria-label="Filtrar por marca" hidden></select>
     <div class="t-dd" id="ddTipo" hidden>
       <button type="button" class="t-dd-btn" id="ddTipoBtn" aria-expanded="false" aria-controls="ddTipoPanel"><span class="t-dd-et">Tipo</span><span class="t-dd-val" id="ddTipoVal"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg></button>
       <div class="t-dd-panel" id="ddTipoPanel" role="group" aria-label="Tipo" hidden>
