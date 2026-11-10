@@ -27,7 +27,7 @@
     .sec-label{font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--olive-mid);font-weight:400;display:flex;align-items:center;gap:10px;margin-bottom:8px;}
     .sec-label::before{content:'';width:22px;height:1px;background:var(--olive-mid);display:block;}
     .t-hdr{margin-bottom:22px;}
-    .t-titulo{font-family:var(--serif);font-size:2rem;font-weight:600;line-height:1.15;color:var(--ink);letter-spacing:-.005em;white-space:nowrap;}
+    .t-titulo{font-family:var(--serif);font-size:3rem;font-weight:600;line-height:1.15;color:var(--ink);letter-spacing:-.005em;white-space:nowrap;}
     .t-titulo em{font-style:normal;color:var(--olive-mid);}
     .t-hdr p{margin-top:6px;font-size:.86rem;line-height:1.6;color:var(--ink-soft);max-width:560px;}
     .preview-banner{background:#f3e3b8;border:1px solid #d9bd72;color:#6b5314;border-radius:12px;padding:10px 16px;font-size:.84rem;font-weight:400;margin-bottom:18px;text-align:center;}
@@ -40,17 +40,69 @@
     .t-sel{flex:0 1 200px;min-width:0;cursor:pointer;}
     .t-inp:focus,.t-sel:focus{border-color:var(--olive-mid);}
     .t-sel[hidden]{display:none;}
-    .t-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;position:relative;}
     #grilla{margin-top:12px;}
-    /* Celular: cada fila de chips es una sola línea que se desplaza de costado (sin saltar de renglón). */
-    @media(max-width:600px){
-      .t-chips{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;padding-bottom:4px;}
-      .t-chip{flex:none;white-space:nowrap;}
-    }
-    .t-chips[hidden]{display:none;}
-    .t-chip{font-family:var(--sans);font-size:.76rem;font-weight:400;letter-spacing:.02em;color:var(--ink-mid);background:var(--white);border:1.5px solid var(--cream-mid);border-radius:50px;padding:7px 15px;cursor:pointer;transition:all .2s;}
+    /* CATEGORÍA: pestañas sobre una línea verde; la elegida va en verde sólido. */
+    .t-cat{margin-bottom:12px;}
+    .t-cat[hidden]{display:none;}
+    .t-rot{font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--olive-mid);font-weight:500;margin:0 0 6px 2px;}
+    .t-chips{display:flex;gap:6px;flex-wrap:wrap;position:relative;}
+    .t-tabs{border-bottom:2px solid var(--olive);}
+    .t-chip{font-family:var(--sans);font-size:.78rem;font-weight:400;letter-spacing:.02em;color:var(--ink-mid);background:var(--white);border:1.5px solid var(--cream-mid);border-bottom:none;border-radius:12px 12px 0 0;padding:9px 16px 8px;cursor:pointer;transition:background .2s,color .2s,border-color .2s;}
     .t-chip:hover{border-color:var(--olive-mid);color:var(--olive);}
     .t-chip.act{background:var(--olive);border-color:var(--olive);color:var(--white);}
+
+    /* BARRA: Tipo y Atributos (desplegables), elegidos, limpiar y contador. */
+    .t-barra{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin:14px 0 4px;}
+    .t-barra[hidden]{display:none;}
+    .t-sels{display:contents;}
+    .t-dd{position:relative;}
+    .t-dd[hidden]{display:none;}
+    .t-dd-btn{display:inline-flex;align-items:center;gap:8px;min-height:40px;font-family:var(--sans);font-size:.8rem;font-weight:400;color:var(--ink);background:var(--white);border:1.5px solid var(--cream-mid);border-radius:50px;padding:8px 14px 8px 16px;cursor:pointer;transition:border-color .2s;}
+    .t-dd-btn:hover,.t-dd-btn[aria-expanded="true"]{border-color:var(--olive-mid);}
+    .t-dd-et{font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--olive-mid);font-weight:500;}
+    .t-dd-val{max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .t-dd-val:empty{display:none;}
+    .t-dd-btn svg{width:12px;height:12px;flex:none;transition:transform .2s;}
+    .t-dd-btn[aria-expanded="true"] svg{transform:rotate(180deg);}
+    .t-dd-panel{position:absolute;z-index:150;top:calc(100% + 6px);left:0;min-width:240px;max-width:min(340px,calc(100vw - 44px));background:var(--white);border:1px solid var(--cream-mid);border-radius:14px;box-shadow:0 12px 32px rgba(37,40,32,.18);display:flex;flex-direction:column;overflow:hidden;}
+    .t-dd-panel[hidden]{display:none;}
+    .t-dd-cab{display:none;}
+    .t-dd-lista{overflow-y:auto;max-height:320px;padding:6px;}
+    .t-opt{display:flex;align-items:center;gap:10px;min-height:38px;padding:6px 10px;border-radius:10px;cursor:pointer;font-size:.84rem;color:var(--ink);}
+    .t-opt:hover{background:var(--cream);}
+    .t-opt input{width:18px;height:18px;flex:none;margin:0;cursor:pointer;accent-color:var(--olive);}
+    .t-opt-tx{flex:1;min-width:0;overflow-wrap:anywhere;}
+    .t-n{font-size:.74rem;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
+    .t-opt.off{opacity:.5;cursor:not-allowed;}
+    .t-opt.off input{cursor:not-allowed;}
+    .t-opt:has(input:focus-visible){background:var(--cream);}
+    .t-selchip{display:inline-flex;align-items:center;gap:6px;min-height:30px;font-family:var(--sans);font-size:.74rem;font-weight:400;color:var(--olive-deep);background:var(--cream-dark);border:1px solid var(--olive-pale);border-radius:50px;padding:3px 8px 3px 12px;cursor:pointer;}
+    .t-selchip:hover{border-color:var(--olive-mid);}
+    .t-selchip span{font-size:1.05rem;line-height:1;}
+    .t-limpiar{background:none;border:none;color:var(--ink-soft);font-family:var(--sans);font-size:.76rem;text-decoration:underline;cursor:pointer;padding:8px 4px;}
+    .t-limpiar[hidden]{display:none;}
+    .t-limpiar:hover{color:var(--olive);}
+    .t-cuenta{margin-left:auto;font-size:.8rem;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
+    .t-dd-fondo{display:none;}
+    .t-dd-btn:focus-visible,.t-chip:focus-visible,.t-selchip:focus-visible,.t-limpiar:focus-visible,.t-dd-ok:focus-visible,.t-opt input:focus-visible{outline:2px solid var(--olive);outline-offset:2px;}
+    /* Celular: categorías en una fila que se desplaza de costado; los desplegables se abren como hoja inferior (alto táctil 44px). */
+    @media(max-width:600px){
+      .t-tabs{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;}
+      .t-chip{flex:none;white-space:nowrap;min-height:40px;}
+      .t-dd{flex:1 1 calc(50% - 5px);min-width:0;}
+      .t-dd-btn{width:100%;min-height:44px;justify-content:space-between;}
+      .t-dd-val{max-width:none;flex:1;text-align:right;}
+      .t-dd-fondo{display:block;position:fixed;inset:0;z-index:250;background:rgba(37,40,32,.5);}
+      .t-dd-fondo[hidden]{display:none;}
+      .t-dd-panel{position:fixed;z-index:260;left:0;right:0;bottom:0;top:auto;max-width:none;min-width:0;border:none;border-radius:20px 20px 0 0;max-height:75vh;max-height:75dvh;padding-bottom:env(safe-area-inset-bottom,0px);}
+      .t-dd-cab{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid var(--cream-mid);font-family:var(--serif);font-size:1.3rem;font-weight:600;}
+      .t-dd-ok{min-height:44px;padding:0 20px;border-radius:50px;border:1.5px solid var(--olive);background:var(--olive);color:var(--white);font-family:var(--sans);font-size:.84rem;font-weight:400;cursor:pointer;}
+      .t-dd-lista{max-height:none;flex:1;padding:8px 10px;}
+      .t-opt{min-height:44px;}
+      .t-selchip{min-height:36px;}
+      .t-limpiar{min-height:44px;padding:0 8px;}
+      body.dd-lock{overflow:hidden;}
+    }
 
     /* GRILLA: 6 / 5 (≤1280) / 4 (≤1000) / 3 (≤820) / 2 (≤600) / 1 (<340) */
     .t-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px;}
@@ -99,8 +151,12 @@
     @media(max-width:600px){
       .t-sel{flex:1 1 140px;}
     }
-    @media(max-width:499px){
-      .t-titulo{white-space:normal;font-size:1.7rem;}
+    @media(max-width:900px){
+      .t-titulo{white-space:normal;}
+      .t-titulo em{white-space:nowrap;}
+    }
+    @media(max-width:600px){
+      .t-titulo{font-size:2.1rem;}
     }
 
     /* NAV: ícono del carrito a la derecha */
@@ -254,9 +310,30 @@
     <input class="t-inp" type="search" id="fBuscar" placeholder="Buscar producto, marca o categoría…" aria-label="Buscar productos" autocomplete="off">
     <select class="t-sel" id="fMarca" aria-label="Filtrar por marca" hidden></select>
   </div>
-  <div class="t-chips" id="fChips" role="group" aria-label="Categorías" hidden></div>
-  <div class="t-chips" id="fTipos" role="group" aria-label="Tipos" hidden></div>
-  <div class="t-chips" id="fAtrs" role="group" aria-label="Atributos" hidden></div>
+  <div class="t-cat" id="fCat" hidden>
+    <div class="t-rot" id="fCatRot">Categoría</div>
+    <div class="t-chips t-tabs" id="fChips" role="group" aria-labelledby="fCatRot"></div>
+  </div>
+  <div class="t-barra" id="fBarra" hidden>
+    <div class="t-dd" id="ddTipo" hidden>
+      <button type="button" class="t-dd-btn" id="ddTipoBtn" aria-expanded="false" aria-controls="ddTipoPanel"><span class="t-dd-et">Tipo</span><span class="t-dd-val" id="ddTipoVal"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg></button>
+      <div class="t-dd-panel" id="ddTipoPanel" role="group" aria-label="Tipo" hidden>
+        <div class="t-dd-cab"><span>Tipo</span><button type="button" class="t-dd-ok">Listo</button></div>
+        <div class="t-dd-lista" id="ddTipoLista"></div>
+      </div>
+    </div>
+    <div class="t-dd" id="ddAtr" hidden>
+      <button type="button" class="t-dd-btn" id="ddAtrBtn" aria-expanded="false" aria-controls="ddAtrPanel"><span class="t-dd-et">Atributos</span><span class="t-dd-val" id="ddAtrVal"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg></button>
+      <div class="t-dd-panel" id="ddAtrPanel" role="group" aria-label="Atributos" hidden>
+        <div class="t-dd-cab"><span>Atributos</span><button type="button" class="t-dd-ok">Listo</button></div>
+        <div class="t-dd-lista" id="ddAtrLista"></div>
+      </div>
+    </div>
+    <div class="t-sels" id="fSel"></div>
+    <button type="button" class="t-limpiar" id="fLimpiar" hidden>Limpiar filtros</button>
+    <span class="t-cuenta" id="fCuenta" role="status" aria-live="polite"></span>
+  </div>
+  <div class="t-dd-fondo" id="ddFondo" hidden></div>
   <p class="t-aviso" id="fAviso" hidden>Estás viendo los primeros 60 productos. Si buscás otro, consultanos por WhatsApp.</p>
 
   <div class="t-grid" id="grilla"><div class="t-cargando">Cargando productos…</div></div>
@@ -330,66 +407,136 @@
     sel.hidden=!valores.length;
   }
 
-  // Filtros por chips en tres filas: categoría → tipo (de la categoría elegida) → atributos (combinables).
-  // Los datos viejos (sin tipo_tienda / atributos_tienda) se toleran: esas filas quedan ocultas.
+  // Filtros: categoría en pestañas; Tipo (de la categoría elegida) y Atributos (combinables) en desplegables.
+  // Los datos viejos (sin tipo_tienda / atributos_tienda) se toleran: esas filas solo aparecen sin filtrar por tipo/atributos.
   let catActual='', tipoActual='', atrActual=[];
   const catDe=p=>String(p.categoria_tienda||'').trim();
   const tipoDe=p=>String(p.tipo_tienda||'').trim();
   const atrsDe=p=>Array.isArray(p.atributos_tienda)?p.atributos_tienda.map(a=>String(a==null?'':a).trim()).filter(Boolean):[];
   const ordenados=arr=>[...new Set(arr.filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+  const atrsDeTodos=lista=>ordenados(lista.reduce((acc,p)=>acc.concat(atrsDe(p)),[]));
 
   function chip(valor,etiqueta,activo){
     return '<button type="button" class="t-chip'+(activo?' act':'')+'" data-v="'+esc(valor)+'" aria-pressed="'+activo+'">'+esc(etiqueta)+'</button>';
   }
   function fila(el,valores,esActivo,todas){
     const desp=el.scrollLeft;
-    el.hidden=!valores.length;
-    el.innerHTML=valores.length?(todas?chip('',todas,!valores.some(esActivo)):'')+valores.map(v=>chip(v,v,esActivo(v))).join(''):'';
+    el.innerHTML=valores.length?chip('',todas,!valores.some(esActivo))+valores.map(v=>chip(v,v,esActivo(v))).join(''):'';
     // Al re-armar la fila se conserva el desplazamiento; si el chip activo quedó fuera de vista, se lo trae.
     el.scrollLeft=desp;
     const a=el.querySelector('.t-chip.act');
     if(a&&el.scrollWidth>el.clientWidth&&(a.offsetLeft<el.scrollLeft||a.offsetLeft+a.offsetWidth>el.scrollLeft+el.clientWidth)) el.scrollLeft=Math.max(0,a.offsetLeft-12);
   }
 
-  function armarChips(){
+  const consulta=()=>({q:norm($('fBuscar').value.trim()),marca:$('fMarca').value});
+  const coincide=(p,q,marca)=>(!marca||p.laboratorio===marca)&&
+    (!q||q.split(/\s+/).every(w=>norm([p.nombre,p.laboratorio,p.categoria_tienda,p.tipo_tienda,atrsDe(p).join(' '),p.descripcion].join(' ')).includes(w)));
+  const deLaCategoria=()=>PRODUCTOS.filter(p=>!catActual||catDe(p)===catActual);
+  const deLaTipo=()=>deLaCategoria().filter(p=>!tipoActual||tipoDe(p)===tipoActual);
+  // Al cambiar categoría o tipo, los atributos elegidos que ya no existen en ese conjunto se sacan.
+  function podarAtrs(){ const hay=atrsDeTodos(deLaTipo()); atrActual=atrActual.filter(a=>hay.includes(a)); }
+
+  // Desplegables (uno abierto a la vez): se cierran con Esc, al tocar fuera, al salir con Tab y con "Listo" (celular).
+  let ddAbierto=null;
+  function cerrarDD(devolverFoco){
+    if(!ddAbierto) return;
+    const d=ddAbierto, b=d.querySelector('.t-dd-btn'); ddAbierto=null;
+    b.setAttribute('aria-expanded','false');
+    d.querySelector('.t-dd-panel').hidden=true;
+    $('ddFondo').hidden=true; document.body.classList.remove('dd-lock');
+    if(devolverFoco) b.focus({preventScroll:true});
+  }
+  function abrirDD(d){
+    if(ddAbierto===d){ cerrarDD(true); return; }
+    cerrarDD(false);
+    ddAbierto=d;
+    d.querySelector('.t-dd-btn').setAttribute('aria-expanded','true');
+    const p=d.querySelector('.t-dd-panel'); p.hidden=false;
+    $('ddFondo').hidden=false; document.body.classList.add('dd-lock');
+    const f=p.querySelector('input:checked:not([disabled])')||p.querySelector('input:not([disabled])');
+    if(f) f.focus({preventScroll:true});
+  }
+  // items: [{v,et,n,marcado,off}]. Si la lista se vuelve a dibujar con el foco adentro, el foco vuelve a la misma opción.
+  function armarLista(el,tipo,nombre,items){
+    const act=document.activeElement, foco=act&&el.contains(act)&&act.tagName==='INPUT'?act.value:null;
+    el.innerHTML=items.map(it=>'<label class="t-opt'+(it.off?' off':'')+'"><input type="'+tipo+'" name="'+nombre+'" value="'+esc(it.v)+'"'+(it.marcado?' checked':'')+(it.off?' disabled':'')+'><span class="t-opt-tx">'+esc(it.et)+'</span>'+(it.n==null?'':'<span class="t-n">'+it.n+'</span>')+'</label>').join('');
+    if(foco!==null){ const n=[...el.querySelectorAll('input')].find(i=>i.value===foco&&!i.disabled); if(n) n.focus({preventScroll:true}); }
+  }
+
+  // Dibuja los controles (pestañas, desplegables, elegidos). Los tipos se cuentan sobre la categoría con búsqueda y marca aplicadas.
+  function actualizar(){
+    const {q,marca}=consulta();
     const cats=ordenados(PRODUCTOS.map(catDe));
     if(!cats.includes(catActual)) catActual='';
-    const deCat=PRODUCTOS.filter(p=>!catActual||catDe(p)===catActual);
+    $('fCat').hidden=!cats.length;
+    fila($('fChips'),cats,c=>c===catActual,'Todas');
+    const deCat=deLaCategoria();
     const tipos=catActual?ordenados(deCat.map(tipoDe)):[];
     if(!tipos.includes(tipoActual)) tipoActual='';
-    const deTipo=deCat.filter(p=>!tipoActual||tipoDe(p)===tipoActual);
-    const atrs=ordenados(deTipo.reduce((acc,p)=>acc.concat(atrsDe(p)),[]));
-    atrActual=atrActual.filter(a=>atrs.includes(a));
-    fila($('fChips'),cats,c=>c===catActual,'Todas');
-    fila($('fTipos'),tipos,t=>t===tipoActual,'Todos');
-    fila($('fAtrs'),atrs,a=>atrActual.includes(a),'');
+    const visibles=deCat.filter(p=>coincide(p,q,marca));
+    const cuenta={}; visibles.forEach(p=>{const t=tipoDe(p); if(t) cuenta[t]=(cuenta[t]||0)+1;});
+    $('ddTipo').hidden=!tipos.length;
+    $('ddTipoVal').textContent=tipoActual||'Todos';
+    armarLista($('ddTipoLista'),'radio','tipo',[{v:'',et:'Todos los tipos',n:visibles.length,marcado:!tipoActual}].concat(tipos.map(t=>({v:t,et:t,n:cuenta[t]||0,marcado:t===tipoActual,off:!cuenta[t]&&t!==tipoActual}))));
+    const atrs=ordenados(atrsDeTodos(visibles.filter(p=>!tipoActual||tipoDe(p)===tipoActual)).concat(atrActual));
+    $('ddAtr').hidden=!atrs.length;
+    $('ddAtrVal').textContent=atrActual.length?String(atrActual.length):'';
+    armarLista($('ddAtrLista'),'checkbox','atr',atrs.map(a=>({v:a,et:a,marcado:atrActual.includes(a)})));
+    const sels=(tipoActual?[{k:'tipo',v:tipoActual}]:[]).concat(atrActual.map(v=>({k:'atr',v})));
+    $('fSel').innerHTML=sels.map(x=>'<button type="button" class="t-selchip" data-k="'+x.k+'" data-v="'+esc(x.v)+'" aria-label="'+esc('Quitar filtro: '+x.v)+'">'+esc(x.v)+'<span aria-hidden="true">×</span></button>').join('');
+    $('fLimpiar').hidden=!(catActual||tipoActual||atrActual.length||marca||q);
+    if(ddAbierto&&ddAbierto.hidden) cerrarDD(false);
   }
 
   function armarFiltros(){
     const unicos=k=>[...new Set(PRODUCTOS.map(p=>String(p[k]||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
     opciones($('fMarca'),unicos('laboratorio'),'Todas las marcas');
-    armarChips();
-    $('filtros').hidden=false;
+    $('filtros').hidden=false; $('fBarra').hidden=false;
+    actualizar();
   }
 
   function render(){
-    const q=norm($('fBuscar').value.trim()), marca=$('fMarca').value;
-    const lista=PRODUCTOS.filter(p=>
-      (!catActual||catDe(p)===catActual)&&(!tipoActual||tipoDe(p)===tipoActual)&&
-      atrActual.every(a=>atrsDe(p).includes(a))&&(!marca||p.laboratorio===marca)&&
-      (!q||q.split(/\s+/).every(w=>norm([p.nombre,p.laboratorio,p.categoria_tienda,p.tipo_tienda,atrsDe(p).join(' '),p.descripcion].join(' ')).includes(w))));
+    const {q,marca}=consulta();
+    const lista=deLaTipo().filter(p=>atrActual.every(a=>atrsDe(p).includes(a))&&coincide(p,q,marca));
+    $('fCuenta').textContent=lista.length+(lista.length===1?' producto':' productos');
     $('grilla').innerHTML=lista.length?lista.map(tarjeta).join(''):estado('🔍','Sin resultados','No encontramos productos con esa búsqueda. Probá con otras palabras o limpiá los filtros.');
   }
+  function refrescar(){ actualizar(); render(); }
 
-  // Chips (delegado: se re-arman al elegir).
-  function alElegir(e,cambio){
+  $('fChips').addEventListener('click',e=>{
     const b=e.target.closest('.t-chip'); if(!b) return;
-    cambio(b.dataset.v);
-    armarChips(); render();
-  }
-  $('fChips').addEventListener('click',e=>alElegir(e,v=>{catActual=v;tipoActual='';atrActual=[];}));
-  $('fTipos').addEventListener('click',e=>alElegir(e,v=>{tipoActual=v;}));
-  $('fAtrs').addEventListener('click',e=>alElegir(e,v=>{atrActual=atrActual.includes(v)?atrActual.filter(a=>a!==v):atrActual.concat(v);}));
+    const v=b.dataset.v;
+    catActual=v; tipoActual=''; atrActual=[]; refrescar();
+    const n=[...$('fChips').querySelectorAll('.t-chip')].find(x=>x.dataset.v===v); if(n) n.focus({preventScroll:true});
+  });
+  $('ddTipoLista').addEventListener('change',e=>{ if(e.target.name!=='tipo') return; tipoActual=e.target.value; podarAtrs(); refrescar(); });
+  $('ddTipoLista').addEventListener('click',e=>{ if(e.target.tagName==='INPUT'&&e.detail>0) cerrarDD(true); });   // clic real: cierra; con flechas no
+  $('ddAtrLista').addEventListener('change',e=>{
+    if(e.target.name!=='atr') return;
+    const v=e.target.value; atrActual=e.target.checked?(atrActual.includes(v)?atrActual:atrActual.concat(v)):atrActual.filter(a=>a!==v);
+    refrescar();
+  });
+  document.querySelectorAll('.t-dd').forEach(d=>{
+    d.querySelector('.t-dd-btn').addEventListener('click',()=>abrirDD(d));
+    d.querySelector('.t-dd-ok').addEventListener('click',()=>cerrarDD(true));
+    d.addEventListener('focusout',e=>{ if(e.relatedTarget&&!d.contains(e.relatedTarget)) cerrarDD(false); });
+  });
+  $('ddFondo').addEventListener('click',()=>cerrarDD(true));
+  document.addEventListener('click',e=>{ if(ddAbierto&&!e.composedPath().includes(ddAbierto)) cerrarDD(false); });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&ddAbierto){ e.preventDefault(); cerrarDD(true); } });
+  $('fSel').addEventListener('click',e=>{
+    const b=e.target.closest('.t-selchip'); if(!b) return;
+    const k=b.dataset.k, v=b.dataset.v, i=[...$('fSel').children].indexOf(b);
+    if(k==='tipo'){ tipoActual=''; podarAtrs(); } else atrActual=atrActual.filter(a=>a!==v);
+    refrescar();
+    const resto=[...$('fSel').children], sig=resto[Math.min(i,resto.length-1)];
+    (sig||(!$('fLimpiar').hidden&&$('fLimpiar'))||$('fBuscar')).focus({preventScroll:true});
+  });
+  $('fLimpiar').addEventListener('click',()=>{
+    catActual=''; tipoActual=''; atrActual=[]; $('fBuscar').value=''; $('fMarca').value='';
+    refrescar();
+    $('fBuscar').focus({preventScroll:true});
+  });
 
   // Si una foto no carga, se cambia por el recuadro neutro (el evento error no burbujea: se captura).
   $('grilla').addEventListener('error',e=>{
@@ -430,14 +577,14 @@
       recordarPrecios(datos);
       $('fAviso').hidden=!truncada;
       if(!PRODUCTOS.length){
-        $('filtros').hidden=true; $('fChips').hidden=true; $('fTipos').hidden=true; $('fAtrs').hidden=true;
+        $('filtros').hidden=true; $('fCat').hidden=true; $('fBarra').hidden=true;
         $('grilla').innerHTML=estado('🛍️','Estamos <em>preparando</em> la tienda','Muy pronto vas a encontrar acá los productos que usamos y recomendamos.');
         return;
       }
       armarFiltros();
       render();
     }catch(e){
-      $('filtros').hidden=true; $('fChips').hidden=true; $('fTipos').hidden=true; $('fAtrs').hidden=true;
+      $('filtros').hidden=true; $('fCat').hidden=true; $('fBarra').hidden=true;
       $('grilla').innerHTML=estado('⚠️','No pudimos cargar la tienda','Revisá tu conexión e intentá de nuevo en un momento.','<button class="t-reintentar" id="btnReintentar" type="button">Reintentar</button>');
       const b=$('btnReintentar'); if(b) b.addEventListener('click',cargar);
     }
@@ -874,8 +1021,8 @@
   leerAlmacen(); actualizarContador();
   if(avisoAlmacen) avisar(avisoAlmacen);
 
-  $('fBuscar').addEventListener('input',render);
-  $('fMarca').addEventListener('change',render);
+  $('fBuscar').addEventListener('input',refrescar);
+  $('fMarca').addEventListener('change',refrescar);
   cargar().then(abrirDesdeUrl);
 </script>
 </body>
