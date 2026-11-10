@@ -334,7 +334,7 @@
     <span class="t-cuenta" id="fCuenta" role="status" aria-live="polite"></span>
   </div>
   <div class="t-dd-fondo" id="ddFondo" hidden></div>
-  <p class="t-aviso" id="fAviso" hidden>Estás viendo los primeros 60 productos. Si buscás otro, consultanos por WhatsApp.</p>
+  <p class="t-aviso" id="fAviso" hidden>Estás viendo los primeros 300 productos. Si buscás otro, consultanos por WhatsApp.</p>
 
   <div class="t-grid" id="grilla"><div class="t-cargando">Cargando productos…</div></div>
 </main>
@@ -384,7 +384,7 @@
     const agotado=p.disponible===false;
     return '<article class="prod-card'+(agotado?' agotado':'')+'"'+(id?' data-id="'+id+'"':'')+'>'+
       '<div class="pc-foto">'+
-        (foto?'<img src="'+esc(foto)+'" alt="'+esc(p.nombre)+'" loading="lazy">':'<div class="pc-vacia">'+ICONO_VACIO+'</div>')+
+        (foto?'<img src="'+esc(foto)+'" alt="'+esc(p.nombre)+'" loading="lazy" decoding="async">':'<div class="pc-vacia">'+ICONO_VACIO+'</div>')+
         (p.destacado?'<span class="pc-badge">Destacado</span>':'')+
       '</div>'+
       '<div class="pc-body">'+
@@ -567,7 +567,7 @@
         $('previewBanner').hidden=false;
         datos=productosDeEjemplo();
       }else{
-        const r=await fetch(API+'/api/tienda/productos?limit=60');
+        const r=await fetch(API+'/api/tienda/productos?limit=300');
         if(!r.ok) throw new Error('HTTP '+r.status);
         truncada=r.headers.get('X-Tienda-Truncada')==='1';
         datos=await r.json();
