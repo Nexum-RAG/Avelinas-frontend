@@ -677,6 +677,14 @@
 
   const API='https://porto-estudio-avelinas-api.67iz4w.easypanel.host';
 
+  // Todo dato que venga de la API (o de lo que cargó una visitante) se escapa antes de ir a HTML. En atributos
+  // escapa también comillas; dentro de onclick no se ponen textos: viajan en data-* y se leen con this.dataset.
+  function escHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+  // Solo colores #hex (van en style); si no, el de la paleta.
+  const colorSeguro=(c,def)=>/^#[0-9a-f]{3,8}$/i.test(String(c||''))?c:def;
+  // Solo fotos http(s).
+  const fotoSegura=u=>/^https?:\/\//i.test(String(u||''))?u:null;
+
   function renderTurnos(turnos){
     const cont=document.getElementById('turnosLista');
     if(!turnos.length){
@@ -689,10 +697,10 @@
         const estadoTxt=ESTADOS[t.estado]||t.estado;
         return `<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(90,99,72,.12);">
           <div>
-            <div style="font-size:.88rem;color:var(--ink);font-weight:500;">${t.servicio_nombre||'Servicio'}</div>
-            <div style="font-size:.78rem;color:var(--ink-soft);">${fecha}${hora?' · '+hora:''}</div>
+            <div style="font-size:.88rem;color:var(--ink);font-weight:500;">${escHtml(t.servicio_nombre||'Servicio')}</div>
+            <div style="font-size:.78rem;color:var(--ink-soft);">${escHtml(fecha)}${hora?' · '+escHtml(hora):''}</div>
           </div>
-          <div style="font-size:.72rem;padding:4px 10px;border-radius:50px;background:var(--cream-dark);color:var(--ink-mid);white-space:nowrap;">${estadoTxt}</div>
+          <div style="font-size:.72rem;padding:4px 10px;border-radius:50px;background:var(--cream-dark);color:var(--ink-mid);white-space:nowrap;">${escHtml(estadoTxt)}</div>
         </div>`;
       }).join('');
     }
@@ -821,7 +829,7 @@
       const srvs=serviciosData.filter(s=>s.categoria===cat);
       const min=Math.min(...srvs.map(s=>s.precio));
       const svg=CAT_SVG[cat]||CAT_SVG_DEFAULT;
-      return `<button class="ssb" onclick="selCategoria('${cat}')"><span class="ssn">${svg}${cat}</span></button>`;
+      return `<button class="ssb" data-cat="${escHtml(cat)}" onclick="selCategoria(this.dataset.cat)"><span class="ssn">${svg}${escHtml(cat)}</span></button>`;
     }).join('');
   }
 
@@ -829,7 +837,7 @@
     const srvs=serviciosData.filter(s=>s.categoria===cat);
     document.getElementById('p1bTitle').textContent=cat;
     const grid=document.getElementById('srvGrid');
-    grid.innerHTML=srvs.map(s=>`<button class="ssb" onclick="selServicio(this,${s.id},'${s.nombre.replace(/'/g,"\\'")}',${s.duracion})"><span class="ssn">${CAT_SVG[cat]||CAT_SVG_DEFAULT}${s.nombre}</span><span class="ssp">$${s.precio.toLocaleString('es-AR')} · ${s.duracion} min</span></button>`).join('');
+    grid.innerHTML=srvs.map(s=>`<button class="ssb" data-nombre="${escHtml(s.nombre)}" onclick="selServicio(this,${Number(s.id)||0},this.dataset.nombre,${Number(s.duracion)||0})"><span class="ssn">${CAT_SVG[cat]||CAT_SVG_DEFAULT}${escHtml(s.nombre)}</span><span class="ssp">$${Number(s.precio||0).toLocaleString('es-AR')} · ${Number(s.duracion)||0} min</span></button>`).join('');
     document.getElementById('p1').classList.remove('active');
     document.getElementById('p1b').classList.add('active');
   }
@@ -857,11 +865,12 @@
     grid.innerHTML=
       `<button class="prof-cualquiera${cualqSel?' sel':''}" onclick="selProfesional(this,null,'Sin preferencia',null)">Sin preferencia — la primera disponible</button>`+
       profs.map((p,i)=>{
-        const color=p.color||PROF_COLORS[i%PROF_COLORS.length];
+        const color=colorSeguro(p.color,PROF_COLORS[i%PROF_COLORS.length]);
         const ini=(p.iniciales||(p.nombre.split(' ').map(w=>w[0]).join(''))).slice(0,2).toUpperCase();
         const sel=bk.profesionalId===p.id;
-       const avInner=p.foto_url?`<img src="${p.foto_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.style.display='none'">`:ini;
-        return `<button class="prof-btn${sel?' sel':''}" onclick="selProfesional(this,${p.id},'${p.nombre.replace(/'/g,"\\'")}','${color}')"><div class="prof-av" style="background:${color};overflow:hidden;">${avInner}</div><div class="prof-info"><div class="prof-nm">${p.nombre}</div></div></button>`;
+       const foto=fotoSegura(p.foto_url);
+       const avInner=foto?`<img src="${escHtml(foto)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.style.display='none'">`:escHtml(ini);
+        return `<button class="prof-btn${sel?' sel':''}" data-nombre="${escHtml(p.nombre)}" data-color="${escHtml(color)}" onclick="selProfesional(this,${Number(p.id)||0},this.dataset.nombre,this.dataset.color)"><div class="prof-av" style="background:${color};overflow:hidden;">${avInner}</div><div class="prof-info"><div class="prof-nm">${escHtml(p.nombre)}</div></div></button>`;
       }).join('');
   }
 
